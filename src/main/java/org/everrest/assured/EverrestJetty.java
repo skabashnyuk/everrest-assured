@@ -8,7 +8,9 @@ import org.testng.ITestNGMethod;
 import org.testng.annotations.Listeners;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.Path;
@@ -56,7 +58,8 @@ public class EverrestJetty extends MockitoTestNGListener
       {
          return;
       }
-      JettyHttpServer httpServer = new JettyHttpServer();
+
+      List testServices = new ArrayList();
 
       for (Object instance : allTestInstancesWithEverrestJetty(context.getAllTestMethods()))
       {
@@ -73,7 +76,7 @@ public class EverrestJetty extends MockitoTestNGListener
                   if (fieldClass.isAnnotationPresent(Path.class) || fieldClass.isAnnotationPresent(Provider.class)
                      || fieldClass.isAnnotationPresent(Filter.class))
                   {
-                     httpServer.addComponentToRequestContainer(fieldInstance);
+                     testServices.add(fieldInstance);
                   }
                }
             }
@@ -88,9 +91,11 @@ public class EverrestJetty extends MockitoTestNGListener
 
          }
       }
+      JettyHttpServer httpServer = new JettyHttpServer(testServices.toArray());
       context.setAttribute(JETTY_PORT, httpServer.getPort());
       context.setAttribute(JETTY_SERVER, httpServer);
       httpServer.start();
+
    }
 
    private Set<Object> allTestInstancesWithEverrestJetty(ITestNGMethod[] testMethods)

@@ -20,7 +20,9 @@ package org.everrest.assured;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.everrest.assured.EverrestJetty.JETTY_PORT;
+import static org.mockito.Mockito.when;
 
+import org.everrest.sample.book.Book;
 import org.everrest.sample.book.BookService;
 import org.everrest.sample.book.BookStorage;
 import org.hamcrest.Matchers;
@@ -29,6 +31,9 @@ import org.mockito.Mock;
 import org.testng.ITestContext;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  *
@@ -45,6 +50,14 @@ public class BookServiceTest
    @Test
    public void testName(ITestContext context) throws Exception
    {
-      given().port((Integer)context.getAttribute(JETTY_PORT)).body(Matchers.containsString("tt")).when().get("/books");
+      Collection<Book> bookCollection = new ArrayList<Book>();
+      Book book = new Book();
+      book.setId("123-1235-555");
+      bookCollection.add(book);
+      when(bookStorage.getAll()).thenReturn(bookCollection);
+
+      given().auth().basic("cldadmin", "tomcat").port((Integer)context.getAttribute(JETTY_PORT)).expect()
+         .body("id", Matchers.hasItem("123-1235-555")).log().all().when().get("/rest/books");
+
    }
 }

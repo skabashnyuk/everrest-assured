@@ -78,16 +78,19 @@ public class JettyHttpServer implements HttpServer
 
    public final static String UNAUTHORIZED_USER = "user";
 
+   private final Object[] testObjects;
+
    /**
     * 
     */
-   public JettyHttpServer()
+   public JettyHttpServer(Object[] testObjects)
    {
-      this(AvailablePortFinder.getNextAvailable(3000));
+      this(testObjects, AvailablePortFinder.getNextAvailable(3000));
    }
 
-   public JettyHttpServer(int port)
+   public JettyHttpServer(Object[] testObjects, int port)
    {
+      this.testObjects = testObjects;
       this.port = port;
       this.server = new Server(port);
       this.context = null;
@@ -136,6 +139,8 @@ public class JettyHttpServer implements HttpServer
       {
          context.setSecurityHandler(securityHandler);
       }
+
+      server.setHandler(handler);
       try
       {
          server.start();
@@ -198,6 +203,7 @@ public class JettyHttpServer implements HttpServer
 
    protected void setContextAttributes(ServletContextHandler context)
    {
+      context.setAttribute("testObjects", testObjects);
    }
 
    @SuppressWarnings("unchecked")
@@ -287,6 +293,7 @@ public class JettyHttpServer implements HttpServer
    protected void initParams(Map<String, String> params)
    {
       // params.put(key, value)("stateless-webapp", "true");
+      params.put("webapp-composer-class", TestComposser.class.getName());
    }
 
    public EnvironmentContext getUnsecureEnvironment()
