@@ -16,34 +16,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.everrest.assured;
+package org.everrest.assured.http;
 
-import static org.everrest.assured.EverrestAssured.expect;
-
-import org.everrest.sample.book.BookService;
-import org.everrest.sample.book.BookStorage;
-import org.hamcrest.Matchers;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockitong.MockitoTestNGInitializer;
-import org.testng.annotations.Listeners;
-import org.testng.annotations.Test;
+import com.jayway.restassured.specification.RequestSpecification;
+import com.jayway.restassured.specification.ResponseSpecification;
 
 /**
  *
  */
-@Listeners(MockitoTestNGInitializer.class)
-public class BookServiceTest
+public class TestSpecefication
 {
-   @Mock
-   private BookStorage bookStorage;
+   private final ResponseSpecification responseSpecification;
 
-   @InjectMocks
-   private BookService bookService;
+   private final RequestSpecification requestSpecification;
 
-   @Test
-   public void testName() throws Exception
+   /**
+    * @param responseSpecification
+    * @param requestSpecification
+    */
+   public TestSpecefication(ResponseSpecification responseSpecification, RequestSpecification requestSpecification)
    {
-      expect().body(Matchers.containsString("tt")).when().get("/books");
+      super();
+      this.responseSpecification = responseSpecification;
+      this.requestSpecification = requestSpecification;
    }
+
+   /**
+    * @return
+    */
+   public ResponseSpecification getResponseSpecification()
+   {
+      return responseSpecification;
+   }
+
 }
