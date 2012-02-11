@@ -18,21 +18,22 @@
  */
 package org.everrest.assured;
 
-import static org.everrest.assured.EverrestAssured.expect;
+import static com.jayway.restassured.RestAssured.given;
+import static org.everrest.assured.EverrestJetty.JETTY_PORT;
 
 import org.everrest.sample.book.BookService;
 import org.everrest.sample.book.BookStorage;
 import org.hamcrest.Matchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockitong.MockitoTestNGInitializer;
+import org.testng.ITestContext;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 /**
  *
  */
-@Listeners(MockitoTestNGInitializer.class)
+@Listeners(EverrestJetty.class)
 public class BookServiceTest
 {
    @Mock
@@ -42,8 +43,8 @@ public class BookServiceTest
    private BookService bookService;
 
    @Test
-   public void testName() throws Exception
+   public void testName(ITestContext context) throws Exception
    {
-      expect().body(Matchers.containsString("tt")).when().get("/books");
+      given().port((Integer)context.getAttribute(JETTY_PORT)).body(Matchers.containsString("tt")).when().get("/books");
    }
 }

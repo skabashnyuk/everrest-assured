@@ -18,14 +18,33 @@
 
    <dependencies>
       <dependency>
+         <groupId>ch.qos.logback</groupId>
+         <artifactId>logback-classic</artifactId>
+         <version>1.0.0</version>
+         <scope>test</scope>
+      </dependency>
+
+      <dependency>
          <groupId>org.everrest</groupId>
          <artifactId>everrest-core</artifactId>
+         <version>1.0.2</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.everrest</groupId>
+         <artifactId>everrest-test</artifactId>
          <version>1.0.2</version>
       </dependency>
       <dependency>
          <groupId>com.jayway.restassured</groupId>
          <artifactId>rest-assured</artifactId>
          <version>1.5</version>
+         <exclusions>
+            <exclusion>
+               <groupId>org.codehaus.groovy</groupId>
+               <artifactId>groovy</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.codehaus.groovy</groupId>
@@ -42,6 +61,49 @@
          <artifactId>mockitong</artifactId>
          <version>0.2</version>
          <scope>test</scope>
+      </dependency>
+
+
+      <dependency>
+         <groupId>org.everrest</groupId>
+         <artifactId>everrest-integration-picocontainer</artifactId>
+         <version>1.0.2</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.picocontainer</groupId>
+         <artifactId>picocontainer</artifactId>
+         <version>2.14.1</version>
+      </dependency>
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-api</artifactId>
+         <version>1.6.4</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.picocontainer.web</groupId>
+         <artifactId>picocontainer-web-core</artifactId>
+         <version>2.5.1</version>
+      </dependency>
+
+
+      <dependency>
+         <groupId>org.eclipse.jetty</groupId>
+         <artifactId>jetty-http</artifactId>
+         <version>8.1.0.v20120127</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.eclipse.jetty</groupId>
+         <artifactId>jetty-server</artifactId>
+         <version>8.1.0.v20120127</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.eclipse.jetty</groupId>
+         <artifactId>jetty-servlet</artifactId>
+         <version>8.1.0.v20120127</version>
       </dependency>
 
       <dependency>

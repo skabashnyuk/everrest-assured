@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 eXo Platform SAS.
+ * Copyright (C) 2011 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,37 +16,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.everrest.assured.http;
+package org.picocontainer.web;
 
-import com.jayway.restassured.specification.RequestSpecification;
-import com.jayway.restassured.specification.ResponseSpecification;
+
+import org.picocontainer.MutablePicoContainer;
 
 /**
- *
+ * 
  */
-public class TestSpecefication
+public class ContainerExtractor
 {
-   private final ResponseSpecification responseSpecification;
-
-   private final RequestSpecification requestSpecification;
-
-   /**
-    * @param responseSpecification
-    * @param requestSpecification
-    */
-   public TestSpecefication(ResponseSpecification responseSpecification, RequestSpecification requestSpecification)
+   public static MutablePicoContainer getApplicationContainer(ScopedContainers containers)
    {
-      super();
-      this.responseSpecification = responseSpecification;
-      this.requestSpecification = requestSpecification;
+      return containers.getApplicationContainer();
    }
 
-   /**
-    * @return
-    */
-   public ResponseSpecification getResponseSpecification()
+   public static MutablePicoContainer getRequestContainer(ScopedContainers containers)
    {
-      return responseSpecification;
+      return containers.getRequestContainer();
    }
 
+   public static MutablePicoContainer getSessionContainer(ScopedContainers containers)
+   {
+      return containers.getSessionContainer();
+   }
 }
