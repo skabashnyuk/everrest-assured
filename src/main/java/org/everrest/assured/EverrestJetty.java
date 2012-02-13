@@ -3,8 +3,10 @@ package org.everrest.assured;
 import org.everrest.core.Filter;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.ITestContext;
+import org.testng.ITestListener;
 import org.testng.ITestNGListener;
 import org.testng.ITestNGMethod;
+import org.testng.ITestResult;
 import org.testng.annotations.Listeners;
 
 import java.lang.reflect.Field;
@@ -38,7 +40,7 @@ import javax.ws.rs.ext.Provider;
 /**
  *
  */
-public class EverrestJetty extends MockitoTestNGListener
+public class EverrestJetty implements ITestListener
 {
    public final static String JETTY_PORT = "jetty-port";
 
@@ -53,7 +55,6 @@ public class EverrestJetty extends MockitoTestNGListener
     */
    public void onStart(ITestContext context)
    {
-      super.onStart(context);
       if (context.getAllTestMethods() == null)
       {
          return;
@@ -91,6 +92,7 @@ public class EverrestJetty extends MockitoTestNGListener
 
          }
       }
+
       JettyHttpServer httpServer = new JettyHttpServer(testServices.toArray());
       context.setAttribute(JETTY_PORT, httpServer.getPort());
       context.setAttribute(JETTY_SERVER, httpServer);
@@ -141,8 +143,57 @@ public class EverrestJetty extends MockitoTestNGListener
 
    public void onFinish(ITestContext context)
    {
-      super.onFinish(context);
       JettyHttpServer httpServer = (JettyHttpServer)context.getAttribute(JETTY_SERVER);
       httpServer.stop();
+   }
+
+   /**
+    * @see org.testng.ITestListener#onTestStart(org.testng.ITestResult)
+    */
+   @Override
+   public void onTestStart(ITestResult result)
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   /**
+    * @see org.testng.ITestListener#onTestSuccess(org.testng.ITestResult)
+    */
+   @Override
+   public void onTestSuccess(ITestResult result)
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   /**
+    * @see org.testng.ITestListener#onTestFailure(org.testng.ITestResult)
+    */
+   @Override
+   public void onTestFailure(ITestResult result)
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   /**
+    * @see org.testng.ITestListener#onTestSkipped(org.testng.ITestResult)
+    */
+   @Override
+   public void onTestSkipped(ITestResult result)
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   /**
+    * @see org.testng.ITestListener#onTestFailedButWithinSuccessPercentage(org.testng.ITestResult)
+    */
+   @Override
+   public void onTestFailedButWithinSuccessPercentage(ITestResult result)
+   {
+      // TODO Auto-generated method stub
+
    }
 }

@@ -28,6 +28,7 @@ import org.everrest.sample.book.BookStorage;
 import org.hamcrest.Matchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.testng.MockitoTestNGListener;
 import org.testng.ITestContext;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -38,7 +39,7 @@ import java.util.Collection;
 /**
  *
  */
-@Listeners(EverrestJetty.class)
+@Listeners(value = {EverrestJetty.class, MockitoTestNGListener.class})
 public class BookServiceTest
 {
    @Mock
@@ -57,7 +58,7 @@ public class BookServiceTest
       when(bookStorage.getAll()).thenReturn(bookCollection);
 
       given().auth().basic("cldadmin", "tomcat").port((Integer)context.getAttribute(JETTY_PORT)).expect()
-         .body("id", Matchers.hasItem("123-1235-555")).log().all().when().get("/rest/books");
+         .body("id", Matchers.hasItem("123-1235-555")).when().get("/rest/books");
 
    }
 }
