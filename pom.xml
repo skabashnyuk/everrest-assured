@@ -1,20 +1,35 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <groupId>org.exoplatform</groupId>
+      <artifactId>exo.parent</artifactId>
+      <version>8.1</version>
+   </parent>
 
    <groupId>org.everrest</groupId>
    <artifactId>everrest-assured</artifactId>
-   <version>1.0-SNAPSHOT</version>
    <packaging>jar</packaging>
-
+   <version>0.1-SNAPSHOT</version>
    <name>everrest-assured</name>
-   <url>http://maven.apache.org</url>
+
+   <scm>
+      <connection>scm:git:git@github.com:ksmster/everrest-assured.git</connection>
+      <url>scm:git:git@github.com:ksmster/everrest-assured.git</url>
+      <developerConnection>scm:git:git@github.com:ksmster/everrest-assured.git</developerConnection>
+   </scm>
 
    <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+     <exo.snapshots.repo.url>dav:http://repository.exoplatform.org/content/repositories/exo-private-snapshots</exo.snapshots.repo.url>
       <maven.compiler.optimize>true</maven.compiler.optimize>
       <maven.compiler.source>1.6</maven.compiler.source>
       <maven.compiler.target>1.6</maven.compiler.target>
+      <version.buildnumber.plugin>1.0</version.buildnumber.plugin>
    </properties>
+
+   <prerequisites>
+      <maven>2.2.1</maven>
+   </prerequisites>
+
 
    <dependencies>
       <dependency>
@@ -72,10 +87,6 @@
          <version>0.3-SNAPSHOT</version>
          <scope>test</scope>
       </dependency>
-
-
-
-
 
       <dependency>
          <groupId>org.eclipse.jetty</groupId>
