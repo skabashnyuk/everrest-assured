@@ -26,7 +26,6 @@ import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
-import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.security.Constraint;
@@ -38,15 +37,11 @@ import org.everrest.core.impl.EnvironmentContext;
 import org.everrest.core.impl.EverrestConfiguration;
 import org.everrest.core.impl.RequestDispatcher;
 import org.everrest.core.impl.RequestHandlerImpl;
+import org.everrest.core.servlet.EverrestInitializedListener;
 import org.everrest.core.servlet.EverrestServlet;
 import org.everrest.core.tools.DummySecurityContext;
 import org.everrest.core.tools.ResourceLauncher;
-import org.everrest.pico.servlet.EverrestPicoFilter;
 import org.everrest.test.mock.MockPrincipal;
-import org.picocontainer.MutablePicoContainer;
-import org.picocontainer.web.ContainerExtractor;
-import org.picocontainer.web.PicoServletContainerListener;
-import org.picocontainer.web.ScopedContainers;
 
 import java.security.Principal;
 import java.util.EventListener;
@@ -59,7 +54,7 @@ import javax.ws.rs.core.SecurityContext;
 /**
  * 
  */
-public class JettyHttpServer implements HttpServer
+public class JettyHttpServer
 {
 
    protected ServletContextHandler context;
@@ -96,19 +91,11 @@ public class JettyHttpServer implements HttpServer
       this.context = null;
    }
 
-   /**
-    * @see org.exoplatform.cloudmanagement.util.HttpServer#getPort()
-    */
-   @Override
    public int getPort()
    {
       return port;
    }
 
-   /**
-    * @see org.exoplatform.cloudmanagement.util.HttpServer#start()
-    */
-   @Override
    public void start()
    {
       RequestLogHandler handler = new RequestLogHandler();
@@ -127,10 +114,6 @@ public class JettyHttpServer implements HttpServer
 
       context.addServlet(servletHolder, "/rest/private/*");
 
-      FilterHolder filterHolder = new FilterHolder(EverrestPicoFilter.class);
-
-      context.addFilter(filterHolder, "/rest/*", null);
-
       setContextAttributes(context);
 
       SecurityHandler securityHandler = getSecurityHandler();
@@ -144,9 +127,17 @@ public class JettyHttpServer implements HttpServer
       try
       {
          server.start();
+         ResourceBinder binder =
+            (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
+         for (Object resource : testObjects)
+         {
+            binder.addResource(resource, null);
+         }
+
       }
       catch (Exception e)
       {
+         e.printStackTrace();
          throw new RuntimeException(e.getLocalizedMessage(), e);
       }
 
@@ -164,10 +155,6 @@ public class JettyHttpServer implements HttpServer
          new EverrestConfiguration()));
    }
 
-   /**
-    * @see org.exoplatform.cloudmanagement.util.HttpServer#stop()
-    */
-   @Override
    public void stop()
    {
       context = null;
@@ -206,30 +193,9 @@ public class JettyHttpServer implements HttpServer
       context.setAttribute("testObjects", testObjects);
    }
 
-   @SuppressWarnings("unchecked")
-   public <T> T getComponent(Class<T> type)
-   {
-      ScopedContainers scopedContainer =
-         (ScopedContainers)context.getServletContext().getAttribute(ScopedContainers.class.getName());
-      MutablePicoContainer appContainer = ContainerExtractor.getApplicationContainer(scopedContainer);
-
-      return appContainer.getComponent(type);
-
-   }
-
-   public void addComponentToRequestContainer(Object implOrInstance)
-   {
-      ScopedContainers scopedContainer =
-         (ScopedContainers)context.getServletContext().getAttribute(ScopedContainers.class.getName());
-      MutablePicoContainer request = ContainerExtractor.getRequestContainer(scopedContainer);
-
-      request.addComponent(implOrInstance);
-
-   }
-
    protected EventListener[] getEventListeners()
    {
-      return new EventListener[]{new PicoServletContainerListener()};
+      return new EventListener[]{new EverrestInitializedListener()};
    }
 
    protected SecurityHandler getSecurityHandler()
@@ -292,8 +258,6 @@ public class JettyHttpServer implements HttpServer
 
    protected void initParams(Map<String, String> params)
    {
-      // params.put(key, value)("stateless-webapp", "true");
-      params.put("webapp-composer-class", TestComposser.class.getName());
    }
 
    public EnvironmentContext getUnsecureEnvironment()

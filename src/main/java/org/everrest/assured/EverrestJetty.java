@@ -1,7 +1,6 @@
 package org.everrest.assured;
 
 import org.everrest.core.Filter;
-import org.mockito.testng.MockitoTestNGListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestNGListener;
@@ -46,13 +45,6 @@ public class EverrestJetty implements ITestListener
 
    private final static String JETTY_SERVER = "jetty-server";
 
-   /**
-    * Init fields with annotated fields for instances that are annotated with
-    * the TestNG listener {@link MockitoTestNGListener}.
-    * 
-    * @param context
-    *           TestContext
-    */
    public void onStart(ITestContext context)
    {
       if (context.getAllTestMethods() == null)
