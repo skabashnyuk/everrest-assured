@@ -31,12 +31,9 @@
          <pattern>%-41(%date[%.15thread]) %-45([%-5level] [%.30logger{30} %L]) - %msg%n</pattern>
       </encoder>
    </appender>
-   <logger name="org.exoplatform.cloudmanagement" level="INFO"/>
-   <logger name="org.exoplatform" level="INFO"/>
-   <logger name="exo" level="INFO"/>
-   <logger name="jclouds.compute" level="DEBUG"/>   
    
-   <root level="DEBUG">
+   
+   <root level="INFO">
       <appender-ref ref="stdout"/>
       <appender-ref ref="file"/>
    </root>
