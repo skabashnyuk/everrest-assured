@@ -32,6 +32,7 @@
       </encoder>
    </appender>
    <logger name="org.eclipse" level="OFF"/>
+   <logger name="org.everrest" level="DEBUG"/>
    <root level="INFO">
       <appender-ref ref="stdout"/>
       <appender-ref ref="file"/>

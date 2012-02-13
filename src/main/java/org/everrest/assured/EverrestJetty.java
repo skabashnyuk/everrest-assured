@@ -1,18 +1,16 @@
 package org.everrest.assured;
 
 import org.everrest.core.Filter;
+import org.testng.IInvokedMethod;
+import org.testng.IInvokedMethodListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
-import org.testng.ITestNGListener;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
-import org.testng.annotations.Listeners;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.ext.Provider;
@@ -39,11 +37,13 @@ import javax.ws.rs.ext.Provider;
 /**
  *
  */
-public class EverrestJetty implements ITestListener
+public class EverrestJetty implements ITestListener, IInvokedMethodListener
 {
    public final static String JETTY_PORT = "jetty-port";
 
    private final static String JETTY_SERVER = "jetty-server";
+
+   private JettyHttpServer httpServer;
 
    public void onStart(ITestContext context)
    {
@@ -52,85 +52,11 @@ public class EverrestJetty implements ITestListener
          return;
       }
 
-      List testServices = new ArrayList();
-
-      for (Object instance : allTestInstancesWithEverrestJetty(context.getAllTestMethods()))
-      {
-         Field[] fields = instance.getClass().getDeclaredFields();
-         for (Field field : fields)
-         {
-            field.setAccessible(true);
-            try
-            {
-               Object fieldInstance = field.get(instance);
-               if (fieldInstance != null)
-               {
-                  Class<? extends Object> fieldClass = fieldInstance.getClass();
-                  if (fieldClass.isAnnotationPresent(Path.class) || fieldClass.isAnnotationPresent(Provider.class)
-                     || fieldClass.isAnnotationPresent(Filter.class))
-                  {
-                     testServices.add(fieldInstance);
-                  }
-               }
-            }
-            catch (IllegalArgumentException e)
-            {
-               throw new RuntimeException(e.getLocalizedMessage(), e);
-            }
-            catch (IllegalAccessException e)
-            {
-               throw new RuntimeException(e.getLocalizedMessage(), e);
-            }
-
-         }
-      }
-
-      JettyHttpServer httpServer = new JettyHttpServer(testServices.toArray());
+      httpServer = new JettyHttpServer();
       context.setAttribute(JETTY_PORT, httpServer.getPort());
       context.setAttribute(JETTY_SERVER, httpServer);
       httpServer.start();
 
-   }
-
-   private Set<Object> allTestInstancesWithEverrestJetty(ITestNGMethod[] testMethods)
-   {
-      Set<Object> testInstancesWithMockitoListener = new HashSet<Object>();
-      for (Object testInstance : allTestInstances(testMethods))
-      {
-         if (hasEverrestJettyListener(testInstance))
-         {
-            testInstancesWithMockitoListener.add(testInstance);
-         }
-      }
-      return testInstancesWithMockitoListener;
-   }
-
-   private boolean hasEverrestJettyListener(Object testInstance)
-   {
-      Listeners listeners = testInstance.getClass().getAnnotation(Listeners.class);
-      if (listeners == null)
-      {
-         return false;
-      }
-
-      for (Class<? extends ITestNGListener> listenerClass : listeners.value())
-      {
-         if (EverrestJetty.class == listenerClass)
-         {
-            return true;
-         }
-      }
-      return false;
-   }
-
-   private Set<Object> allTestInstances(ITestNGMethod[] testMethods)
-   {
-      Set<Object> allTestInstances = new HashSet<Object>();
-      for (ITestNGMethod testMethod : testMethods)
-      {
-         allTestInstances.add(testMethod.getInstance());
-      }
-      return allTestInstances;
    }
 
    public void onFinish(ITestContext context)
@@ -145,8 +71,6 @@ public class EverrestJetty implements ITestListener
    @Override
    public void onTestStart(ITestResult result)
    {
-      // TODO Auto-generated method stub
-
    }
 
    /**
@@ -155,8 +79,6 @@ public class EverrestJetty implements ITestListener
    @Override
    public void onTestSuccess(ITestResult result)
    {
-      // TODO Auto-generated method stub
-
    }
 
    /**
@@ -165,8 +87,6 @@ public class EverrestJetty implements ITestListener
    @Override
    public void onTestFailure(ITestResult result)
    {
-      // TODO Auto-generated method stub
-
    }
 
    /**
@@ -175,8 +95,6 @@ public class EverrestJetty implements ITestListener
    @Override
    public void onTestSkipped(ITestResult result)
    {
-      // TODO Auto-generated method stub
-
    }
 
    /**
@@ -185,7 +103,67 @@ public class EverrestJetty implements ITestListener
    @Override
    public void onTestFailedButWithinSuccessPercentage(ITestResult result)
    {
-      // TODO Auto-generated method stub
+   }
+
+   public List<Object> getRestServices(ITestNGMethod testMethod)
+   {
+      List<Object> result = new ArrayList<Object>();
+      Object instance = testMethod.getInstance();
+      Field[] fields = instance.getClass().getDeclaredFields();
+      for (Field field : fields)
+      {
+         field.setAccessible(true);
+         try
+         {
+            Object fieldInstance = field.get(instance);
+            if (fieldInstance != null)
+            {
+               Class<? extends Object> fieldClass = fieldInstance.getClass();
+               if (fieldClass.isAnnotationPresent(Path.class) || fieldClass.isAnnotationPresent(Provider.class)
+                  || fieldClass.isAnnotationPresent(Filter.class))
+               {
+                  result.add(fieldInstance);
+               }
+            }
+         }
+         catch (IllegalArgumentException e)
+         {
+            throw new RuntimeException(e.getLocalizedMessage(), e);
+         }
+         catch (IllegalAccessException e)
+         {
+            throw new RuntimeException(e.getLocalizedMessage(), e);
+         }
+
+      }
+      return result;
+   }
+
+   /**
+    * @see org.testng.IInvokedMethodListener#beforeInvocation(org.testng.IInvokedMethod,
+    *      org.testng.ITestResult)
+    */
+   @Override
+   public void beforeInvocation(IInvokedMethod method, ITestResult testResult)
+   {
+      if (method.isTestMethod())
+      {
+         httpServer.setServices(getRestServices(method.getTestMethod()));
+      }
+   }
+
+   /**
+    * @see org.testng.IInvokedMethodListener#afterInvocation(org.testng.IInvokedMethod,
+    *      org.testng.ITestResult)
+    */
+   @Override
+   public void afterInvocation(IInvokedMethod method, ITestResult testResult)
+   {
+      if (method.isTestMethod())
+      {
+         httpServer.resetServices();
+      }
 
    }
+
 }

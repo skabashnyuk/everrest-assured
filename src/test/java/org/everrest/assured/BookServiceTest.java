@@ -56,7 +56,10 @@ public class BookServiceTest
       book.setId("123-1235-555");
       bookCollection.add(book);
       when(bookStorage.getAll()).thenReturn(bookCollection);
-
+      // with log
+      //      given().auth().basic("cldadmin", "tomcat").port((Integer)context.getAttribute(JETTY_PORT)).log().all().expect()
+      //         .body("id", Matchers.hasItem("123-1235-555")).when().log().all().get("/rest/books");
+      // without log
       given().auth().basic("cldadmin", "tomcat").port((Integer)context.getAttribute(JETTY_PORT)).expect()
          .body("id", Matchers.hasItem("123-1235-555")).when().get("/rest/books");
 

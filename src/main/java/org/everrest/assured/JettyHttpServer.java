@@ -46,6 +46,7 @@ import org.everrest.test.mock.MockPrincipal;
 import java.security.Principal;
 import java.util.EventListener;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,19 +74,18 @@ public class JettyHttpServer
 
    public final static String UNAUTHORIZED_USER = "user";
 
-   private final Object[] testObjects;
+   private List<Object> restServices;
 
    /**
     * 
     */
-   public JettyHttpServer(Object[] testObjects)
+   public JettyHttpServer()
    {
-      this(testObjects, AvailablePortFinder.getNextAvailable(3000));
+      this(AvailablePortFinder.getNextAvailable(3000));
    }
 
-   public JettyHttpServer(Object[] testObjects, int port)
+   public JettyHttpServer(int port)
    {
-      this.testObjects = testObjects;
       this.port = port;
       this.server = new Server(port);
       this.context = null;
@@ -127,12 +127,6 @@ public class JettyHttpServer
       try
       {
          server.start();
-         ResourceBinder binder =
-            (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
-         for (Object resource : testObjects)
-         {
-            binder.addResource(resource, null);
-         }
 
       }
       catch (Exception e)
@@ -141,6 +135,28 @@ public class JettyHttpServer
          throw new RuntimeException(e.getLocalizedMessage(), e);
       }
 
+   }
+
+   public void setServices(List<Object> restServices)
+   {
+      restServices = restServices;
+      ResourceBinder binder = (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
+      for (Object resource : restServices)
+      {
+         binder.addResource(resource, null);
+      }
+   }
+
+   public void resetServices()
+   {
+      ResourceBinder binder = (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
+      if (restServices != null)
+      {
+         for (Object service : restServices)
+         {
+            binder.removeResource(service.getClass());
+         }
+      }
    }
 
    public ResourceLauncher getResourceLauncher()
@@ -190,7 +206,6 @@ public class JettyHttpServer
 
    protected void setContextAttributes(ServletContextHandler context)
    {
-      context.setAttribute("testObjects", testObjects);
    }
 
    protected EventListener[] getEventListeners()
