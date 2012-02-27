@@ -1,8 +1,10 @@
 package org.everrest.assured;
 
 import org.everrest.core.Filter;
+import org.mockito.testng.MockitoTestNGListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.IInvokedMethod;
-import org.testng.IInvokedMethodListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestNGMethod;
@@ -35,11 +37,13 @@ import javax.ws.rs.ext.Provider;
  */
 
 /**
- * @deprecated use EverrestJettyWithMockitoListener
+ *
  */
-@Deprecated
-public class EverrestJetty implements ITestListener, IInvokedMethodListener
+public class EverrestJettyWithMockitoListener extends MockitoTestNGListener implements ITestListener
 {
+
+   private static final Logger LOG = LoggerFactory.getLogger(EverrestJettyWithMockitoListener.class);
+
    public final static String JETTY_PORT = "jetty-port";
 
    private final static String JETTY_SERVER = "jetty-server";
@@ -106,7 +110,7 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
    {
    }
 
-   public List<Object> getRestServices(ITestNGMethod testMethod)
+   private List<Object> getRestServices(ITestNGMethod testMethod)
    {
       List<Object> result = new ArrayList<Object>();
       Object instance = testMethod.getInstance();
@@ -147,9 +151,12 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
    @Override
    public void beforeInvocation(IInvokedMethod method, ITestResult testResult)
    {
+      super.beforeInvocation(method, testResult);
       if (method.isTestMethod())
       {
-         httpServer.setServices(getRestServices(method.getTestMethod()));
+         List<Object> restServices = getRestServices(method.getTestMethod());
+         LOG.debug("deploing services {}", restServices.size());
+         httpServer.setServices(restServices);
       }
    }
 
@@ -162,9 +169,10 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
    {
       if (method.isTestMethod())
       {
+         LOG.debug("Reset rest services");
          httpServer.resetServices();
       }
-
+      super.afterInvocation(method, testResult);
    }
 
 }

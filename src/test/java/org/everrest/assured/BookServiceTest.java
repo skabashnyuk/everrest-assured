@@ -28,7 +28,6 @@ import org.everrest.sample.book.BookStorage;
 import org.hamcrest.Matchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.testng.MockitoTestNGListener;
 import org.testng.ITestContext;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -39,7 +38,7 @@ import java.util.Collection;
 /**
  *
  */
-@Listeners(value = {EverrestJetty.class, MockitoTestNGListener.class})
+@Listeners(value = EverrestJettyWithMockitoListener.class)
 public class BookServiceTest
 {
    @Mock
