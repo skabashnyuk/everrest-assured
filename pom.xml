@@ -9,7 +9,7 @@
    <groupId>org.everrest</groupId>
    <artifactId>everrest-assured</artifactId>
    <packaging>jar</packaging>
-   <version>0.1-SNAPSHOT</version>
+   <version>0.2-SNAPSHOT</version>
    <name>everrest-assured</name>
 
    <scm>
@@ -19,7 +19,8 @@
    </scm>
 
    <properties>
-     <exo.snapshots.repo.url>dav:http://repository.exoplatform.org/content/repositories/exo-private-snapshots</exo.snapshots.repo.url>
+      <exo.snapshots.repo.url>dav:http://repository.exoplatform.org/content/repositories/thirdparty-snapshots/</exo.snapshots.repo.url>
+      <version.deploy.plugin>2.7</version.deploy.plugin>
       <maven.compiler.optimize>true</maven.compiler.optimize>
       <maven.compiler.source>1.6</maven.compiler.source>
       <maven.compiler.target>1.6</maven.compiler.target>
@@ -32,6 +33,8 @@
 
 
    <dependencies>
+
+      <!-- Logger -->
       <dependency>
          <groupId>ch.qos.logback</groupId>
          <artifactId>logback-classic</artifactId>
@@ -49,7 +52,6 @@
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-api</artifactId>
          <version>1.6.4</version>
-         <scope>test</scope>
       </dependency>
 
 
@@ -63,29 +65,17 @@
       <dependency>
          <groupId>com.jayway.restassured</groupId>
          <artifactId>rest-assured</artifactId>
-         <version>1.5</version>
-         <exclusions>
-            <exclusion>
-               <groupId>org.codehaus.groovy</groupId>
-               <artifactId>groovy</artifactId>
-            </exclusion>
-         </exclusions>
+         <version>1.6</version>
       </dependency>
-      <dependency>
-         <groupId>org.codehaus.groovy</groupId>
-         <artifactId>groovy</artifactId>
-         <version>1.7.10</version>
-      </dependency>
-      <dependency>
          <groupId>org.testng</groupId>
          <artifactId>testng</artifactId>
+         <scope>provided</scope>
          <version>6.3.1</version>
       </dependency>
       <dependency>
          <groupId>org.mockitong</groupId>
          <artifactId>mockitong</artifactId>
          <version>0.3-SNAPSHOT</version>
-         <scope>test</scope>
       </dependency>
 
       <dependency>
@@ -112,6 +102,8 @@
          <version>1.9.0</version>
          <scope>test</scope>
       </dependency>
+      
+      
    </dependencies>
    <build>
       <plugins>
