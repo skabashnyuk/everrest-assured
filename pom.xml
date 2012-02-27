@@ -1,34 +1,98 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
-   <parent>
-      <groupId>org.exoplatform</groupId>
-      <artifactId>exo.parent</artifactId>
-      <version>8.1</version>
-   </parent>
-
    <groupId>org.everrest</groupId>
    <artifactId>everrest-assured</artifactId>
    <packaging>jar</packaging>
    <version>0.2-SNAPSHOT</version>
    <name>everrest-assured</name>
+   <description>Testng listener that deploy mock rest services on Jetty with everrest and tested with rest-assured</description>
+	
 
    <scm>
       <connection>scm:git:git@github.com:ksmster/everrest-assured.git</connection>
-      <url>scm:git:git@github.com:ksmster/everrest-assured.git</url>
       <developerConnection>scm:git:git@github.com:ksmster/everrest-assured.git</developerConnection>
+      <url>https://github.com/ksmster/everrest-assured</url>
    </scm>
+
+ <licenses>
+    <license>
+      <name>LGPL, version 2.1</name>
+      <url>http://www.opensource.org/licenses/lgpl-license.php</url>
+    </license>
+  </licenses>
+
+  <distributionManagement>
+    <repository>
+      <id>repository.exoplatform.org</id>
+      <url>${everrest.releases.repo.url}</url>
+    </repository>
+    <snapshotRepository>
+      <id>repository.exoplatform.org</id>
+      <url>${everrest.snapshots.repo.url}</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+ <developers>
+    <developer>
+      <id>sergey.kabashnyuk</id>
+      <name>Serget Kabashnyuk</name>
+      <email>skabashnyuk@exoplatform.com</email>
+      <roles>
+        <role>Owner</role>
+      </roles>
+    </developer>
+  </developers>
+
+
+ <repositories>
+    <repository>
+      <id>repository.jboss.org</id>
+      <url>http://repository.jboss.org/maven2</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>maven2-repository.dev.java.net</id>
+      <url>http://download.java.net/maven/2/</url>
+    </repository>
+    <repository>
+      <id>repository.exoplatform.org</id>
+      <url>http://repository.exoplatform.org/public</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repository.exoplatform.org</id>
+      <url>http://repository.exoplatform.org/public</url>
+    </pluginRepository>
+  </pluginRepositories>
+
 
    <properties>
       <exo.snapshots.repo.url>dav:http://repository.exoplatform.org/content/repositories/thirdparty-snapshots/</exo.snapshots.repo.url>
-      <version.deploy.plugin>2.7</version.deploy.plugin>
       <maven.compiler.optimize>true</maven.compiler.optimize>
       <maven.compiler.source>1.6</maven.compiler.source>
       <maven.compiler.target>1.6</maven.compiler.target>
       <version.buildnumber.plugin>1.0</version.buildnumber.plugin>
+    <!-- Repositories URLs -->
+    <everrest.releases.repo.url>http://repository.exoplatform.org/content/repositories/thirdparty-snapshots/</everrest.releases.repo.url>
+    <everrest.snapshots.repo.url>http://repository.exoplatform.org/content/repositories/thirdparty-snapshots/</everrest.snapshots.repo.url>
+
+    <!-- maven-release-plugin -->
+    <useReleaseProfile>false</useReleaseProfile>
+    <arguments>-Prelease,izpack,sign-artifacts</arguments>
+    <pushChanges>false</pushChanges>
+    <autoVersionSubmodules>true</autoVersionSubmodules>
+
+
+    <!-- Encoding -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
    </properties>
 
    <prerequisites>
-      <maven>2.2.1</maven>
+      <maven>3.0.4</maven>
    </prerequisites>
 
 
@@ -67,6 +131,7 @@
          <artifactId>rest-assured</artifactId>
          <version>1.6</version>
       </dependency>
+      <dependency>
          <groupId>org.testng</groupId>
          <artifactId>testng</artifactId>
          <scope>provided</scope>
@@ -103,10 +168,56 @@
          <scope>test</scope>
       </dependency>
       
-      
    </dependencies>
    <build>
       <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.7</version>
+        </plugin>
+       <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.4</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              </manifest>
+              <manifestEntries>
+                <Date>${maven.build.timestamp}</Date>
+                <SCM-URL>${project.scm.connection}</SCM-URL>
+              </manifestEntries>
+            </archive>
+          </configuration>
+        </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.1.2</version>
+        <configuration>
+            <archive>
+              <manifest>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              </manifest>
+              <manifestEntries>
+                <Date>${maven.build.timestamp}</Date>
+                <SCM-URL>${project.scm.connection}</SCM-URL>
+              </manifestEntries>
+            </archive>
+          </configuration>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-eclipse-plugin</artifactId>
