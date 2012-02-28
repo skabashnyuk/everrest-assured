@@ -18,12 +18,15 @@
  */
 package org.everrest.assured;
 
+import static com.jayway.restassured.RestAssured.given;
+import static org.everrest.assured.EverrestJetty.JETTY_PORT;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.everrest.sample.book.Book;
 import org.everrest.sample.book.BookService;
 import org.everrest.sample.book.BookStorage;
+import org.hamcrest.Matchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
@@ -35,10 +38,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- *
+ * 
  */
-@Listeners(value = MockitoTestNGListener.class)
-public class BookServiceTest
+@Listeners(value = {EverrestJetty.class, MockitoTestNGListener.class})
+public class BookServiceTest2
 {
    @Mock
    private BookStorage bookStorage;
@@ -54,8 +57,12 @@ public class BookServiceTest
       book.setId("123-1235-555");
       bookCollection.add(book);
       when(bookStorage.getAll()).thenReturn(bookCollection);
-
-      bookService.getAll();
+      // with log
+      //      given().auth().basic("cldadmin", "tomcat").port((Integer)context.getAttribute(JETTY_PORT)).log().all().expect()
+      //         .body("id", Matchers.hasItem("123-1235-555")).when().log().all().get("/rest/books");
+      // without log
+      given().auth().basic("cldadmin", "tomcat").port((Integer)context.getAttribute(JETTY_PORT)).expect()
+         .body("id", Matchers.hasItem("123-1235-555")).when().get("/rest/books");
 
       verify(bookStorage).getAll();
    }

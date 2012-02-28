@@ -31,12 +31,14 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 import org.everrest.core.DependencySupplier;
+import org.everrest.core.ObjectFactory;
 import org.everrest.core.ResourceBinder;
 import org.everrest.core.impl.ApplicationProviderBinder;
 import org.everrest.core.impl.EnvironmentContext;
 import org.everrest.core.impl.EverrestConfiguration;
 import org.everrest.core.impl.RequestDispatcher;
 import org.everrest.core.impl.RequestHandlerImpl;
+import org.everrest.core.resource.AbstractResourceDescriptor;
 import org.everrest.core.servlet.EverrestInitializedListener;
 import org.everrest.core.servlet.EverrestServlet;
 import org.everrest.core.tools.DummySecurityContext;
@@ -137,25 +139,12 @@ public class JettyHttpServer
 
    }
 
-   public void setServices(List<Object> restServices)
-   {
-      restServices = restServices;
-      ResourceBinder binder = (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
-      for (Object resource : restServices)
-      {
-         binder.addResource(resource, null);
-      }
-   }
-
-   public void resetServices()
+   public void setFactories(List<ObjectFactory<AbstractResourceDescriptor>> factories)
    {
       ResourceBinder binder = (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
-      if (restServices != null)
+      for (ObjectFactory<AbstractResourceDescriptor> resource : factories)
       {
-         for (Object service : restServices)
-         {
-            binder.removeResource(service.getClass());
-         }
+         binder.addResource(resource);
       }
    }
 
