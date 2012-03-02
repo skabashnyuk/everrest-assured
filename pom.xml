@@ -142,7 +142,7 @@
       <dependency>
          <groupId>org.mockitong</groupId>
          <artifactId>mockitong</artifactId>
-         <version>0.3-SNAPSHOT</version>
+         <version>0.3</version>
       </dependency>
 
       <dependency>
