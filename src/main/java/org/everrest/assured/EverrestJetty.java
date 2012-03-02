@@ -140,40 +140,6 @@ public class EverrestJetty implements ITestListener
       return factories;
    }
 
-   private List<Object> getRestServices(ITestNGMethod testMethod)
-   {
-      List<Object> result = new ArrayList<Object>();
-      Object instance = testMethod.getInstance();
-      Field[] fields = instance.getClass().getDeclaredFields();
-      for (Field field : fields)
-      {
-         field.setAccessible(true);
-         try
-         {
-            Object fieldInstance = field.get(instance);
-            if (fieldInstance != null)
-            {
-               Class<? extends Object> fieldClass = fieldInstance.getClass();
-               if (fieldClass.isAnnotationPresent(Path.class) || fieldClass.isAnnotationPresent(Provider.class)
-                  || fieldClass.isAnnotationPresent(Filter.class))
-               {
-                  result.add(fieldInstance);
-               }
-            }
-         }
-         catch (IllegalArgumentException e)
-         {
-            throw new RuntimeException(e.getLocalizedMessage(), e);
-         }
-         catch (IllegalAccessException e)
-         {
-            throw new RuntimeException(e.getLocalizedMessage(), e);
-         }
-
-      }
-      return result;
-   }
-
    private boolean isRestResource(Class<? extends Object> resourceClass)
    {
       return resourceClass.isAnnotationPresent(Path.class) || resourceClass.isAnnotationPresent(Provider.class)
