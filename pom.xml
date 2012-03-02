@@ -77,15 +77,8 @@
       <maven.compiler.target>1.6</maven.compiler.target>
       <version.buildnumber.plugin>1.0</version.buildnumber.plugin>
       <!-- Repositories URLs -->
-      <everrest.releases.repo.url>http://repository.exoplatform.org/content/repositories/thirdparty-snapshots/</everrest.releases.repo.url>
+      <everrest.releases.repo.url>http://repository.exoplatform.org/content/repositories/thirdparty/</everrest.releases.repo.url>
       <everrest.snapshots.repo.url>http://repository.exoplatform.org/content/repositories/thirdparty-snapshots/</everrest.snapshots.repo.url>
-
-      <!-- maven-release-plugin -->
-      <useReleaseProfile>false</useReleaseProfile>
-      <arguments>-Prelease,izpack,sign-artifacts</arguments>
-      <pushChanges>false</pushChanges>
-      <autoVersionSubmodules>true</autoVersionSubmodules>
-
 
       <!-- Encoding -->
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
