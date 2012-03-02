@@ -3,6 +3,8 @@ package org.everrest.assured;
 import org.everrest.core.Filter;
 import org.everrest.core.ObjectFactory;
 import org.everrest.core.resource.AbstractResourceDescriptor;
+import org.testng.IInvokedMethod;
+import org.testng.IInvokedMethodListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestNGListener;
@@ -39,7 +41,7 @@ import javax.ws.rs.ext.Provider;
 /**
  * 
  */
-public class EverrestJetty implements ITestListener
+public class EverrestJetty implements ITestListener, IInvokedMethodListener
 {
    public final static String JETTY_PORT = "jetty-port";
 
@@ -54,18 +56,18 @@ public class EverrestJetty implements ITestListener
       {
          return;
       }
-
-      List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(allTestMethods);
-
-      if (factories.size() > 0)
+      if (httpServer == null)
       {
-         httpServer = new JettyHttpServer();
-         context.setAttribute(JETTY_PORT, httpServer.getPort());
-         context.setAttribute(JETTY_SERVER, httpServer);
-         httpServer.start();
-         httpServer.setFactories(factories);
-      }
+         List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(allTestMethods);
 
+         if (factories.size() > 0)
+         {
+            httpServer = new JettyHttpServer();
+            context.setAttribute(JETTY_PORT, httpServer.getPort());
+            context.setAttribute(JETTY_SERVER, httpServer);
+            httpServer.start();
+         }
+      }
    }
 
    public void onFinish(ITestContext context)
@@ -74,6 +76,7 @@ public class EverrestJetty implements ITestListener
       if (httpServer != null)
       {
          httpServer.stop();
+         httpServer = null;
       }
    }
 
@@ -117,7 +120,7 @@ public class EverrestJetty implements ITestListener
    {
    }
 
-   private List<ObjectFactory<AbstractResourceDescriptor>> getResourcesFactories(ITestNGMethod[] testMethods)
+   private List<ObjectFactory<AbstractResourceDescriptor>> getResourcesFactories(ITestNGMethod... testMethods)
    {
       List<ObjectFactory<AbstractResourceDescriptor>> factories =
          new ArrayList<ObjectFactory<AbstractResourceDescriptor>>();
@@ -174,6 +177,36 @@ public class EverrestJetty implements ITestListener
          }
       }
       return false;
+   }
+
+   /**
+    * @see org.testng.IInvokedMethodListener#beforeInvocation(org.testng.IInvokedMethod,
+    *      org.testng.ITestResult)
+    */
+   @Override
+   public void beforeInvocation(IInvokedMethod method, ITestResult testResult)
+   {
+      if (httpServer != null && hasEverrestJettyListener(method.getTestMethod().getInstance().getClass()))
+      {
+         List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(method.getTestMethod());
+         httpServer.resetFactories();
+         httpServer.setFactories(factories);
+      }
+   }
+
+   /**
+    * @see org.testng.IInvokedMethodListener#afterInvocation(org.testng.IInvokedMethod,
+    *      org.testng.ITestResult)
+    */
+   @Override
+   public void afterInvocation(IInvokedMethod method, ITestResult testResult)
+   {
+      if (httpServer != null && hasEverrestJettyListener(method.getTestMethod().getInstance().getClass()))
+      {
+         List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(method.getTestMethod());
+         httpServer.resetFactories();
+      }
+
    }
 
 }

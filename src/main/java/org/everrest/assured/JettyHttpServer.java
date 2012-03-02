@@ -38,6 +38,7 @@ import org.everrest.core.impl.EnvironmentContext;
 import org.everrest.core.impl.EverrestConfiguration;
 import org.everrest.core.impl.RequestDispatcher;
 import org.everrest.core.impl.RequestHandlerImpl;
+import org.everrest.core.impl.ResourceBinderImpl;
 import org.everrest.core.resource.AbstractResourceDescriptor;
 import org.everrest.core.servlet.EverrestInitializedListener;
 import org.everrest.core.servlet.EverrestServlet;
@@ -146,6 +147,12 @@ public class JettyHttpServer
       {
          binder.addResource(resource);
       }
+   }
+
+   public void resetFactories()
+   {
+      ResourceBinder binder = (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
+      ((ResourceBinderImpl)binder).clear();
    }
 
    public ResourceLauncher getResourceLauncher()
