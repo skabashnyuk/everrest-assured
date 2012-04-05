@@ -44,8 +44,19 @@ import org.everrest.core.servlet.EverrestInitializedListener;
 import org.everrest.core.servlet.EverrestServlet;
 import org.everrest.core.tools.DummySecurityContext;
 import org.everrest.core.tools.ResourceLauncher;
+import org.everrest.groovy.BaseResourceId;
+import org.everrest.groovy.GroovyResourcePublisher;
 import org.everrest.test.mock.MockPrincipal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.security.Principal;
 import java.util.EventListener;
 import java.util.HashSet;
@@ -60,6 +71,8 @@ import javax.ws.rs.core.SecurityContext;
  */
 public class JettyHttpServer
 {
+
+   private static final Logger LOG = LoggerFactory.getLogger(JettyHttpServer.class);
 
    protected ServletContextHandler context;
 
@@ -130,6 +143,12 @@ public class JettyHttpServer
       try
       {
          server.start();
+         ResourceBinder binder =
+            (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
+         DependencySupplier dependencies =
+            (DependencySupplier)context.getServletContext().getAttribute(DependencySupplier.class.getName());
+         GroovyResourcePublisher groovyPublisher = new GroovyResourcePublisher(binder, dependencies);
+         context.getServletContext().setAttribute(GroovyResourcePublisher.class.getName(), groovyPublisher);
 
       }
       catch (Exception e)
@@ -147,6 +166,40 @@ public class JettyHttpServer
       {
          binder.addResource(resource);
       }
+   }
+
+   /**
+    * @param groovySercices
+    */
+   public void setGroovyServices(List<GroovyServiceSource> groovySercices)
+   {
+      GroovyResourcePublisher groovyPublisher =
+         (GroovyResourcePublisher)context.getServletContext().getAttribute(GroovyResourcePublisher.class.getName());
+
+      for (GroovyServiceSource groovyServiceSource : groovySercices)
+      {
+         groovyPublisher.publishPerRequest(groovyServiceSource.getSource(),
+            new BaseResourceId(groovyServiceSource.getResourceId()), null,
+            null, null);
+      }
+
+   }
+
+   public void publishPerRequestGroovyScript(String resourcePath, String name)
+   {
+      GroovyResourcePublisher groovyPublisher =
+         (GroovyResourcePublisher)context.getServletContext().getAttribute(GroovyResourcePublisher.class.getName());
+
+      BaseResourceId publishedResourceId = new BaseResourceId(name);
+      groovyPublisher.publishPerRequest(getSource(resourcePath), publishedResourceId, null, null, null);
+   }
+
+   /**
+    * @return the context
+    */
+   public ServletContextHandler getContext()
+   {
+      return context;
    }
 
    public void resetFactories()
@@ -296,4 +349,50 @@ public class JettyHttpServer
       return secureEnvironment;
    }
 
+   public String getSource(String resourceName)
+   {
+
+      InputStream stream = null;
+      try
+      {
+         File file = new File(resourceName);
+         if (file.isFile() && file.exists())
+         {
+            stream = new FileInputStream(file);
+         }
+         else
+         {
+            stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
+         }
+         Reader reader = new BufferedReader(new InputStreamReader(stream));
+         StringBuilder builder = new StringBuilder();
+         char[] buffer = new char[8192];
+         int read;
+         while ((read = reader.read(buffer, 0, buffer.length)) > 0)
+         {
+            builder.append(buffer, 0, read);
+         }
+         return builder.toString();
+      }
+      catch (IOException e)
+      {
+         LOG.error(e.getLocalizedMessage(), e);
+
+      }
+      finally
+      {
+         if (stream != null)
+         {
+            try
+            {
+               stream.close();
+            }
+            catch (IOException e)
+            {
+               LOG.error(e.getLocalizedMessage(), e);
+            }
+         }
+      }
+      return "";
+   }
 }

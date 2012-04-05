@@ -3,6 +3,8 @@ package org.everrest.assured;
 import org.everrest.core.Filter;
 import org.everrest.core.ObjectFactory;
 import org.everrest.core.resource.AbstractResourceDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.IInvokedMethod;
 import org.testng.IInvokedMethodListener;
 import org.testng.ITestContext;
@@ -10,9 +12,11 @@ import org.testng.ITestListener;
 import org.testng.ITestNGListener;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Listeners;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,9 +47,12 @@ import javax.ws.rs.ext.Provider;
  */
 public class EverrestJetty implements ITestListener, IInvokedMethodListener
 {
+
+   private static final Logger LOG = LoggerFactory.getLogger(EverrestJetty.class);
+
    public final static String JETTY_PORT = "jetty-port";
 
-   private final static String JETTY_SERVER = "jetty-server";
+   public final static String JETTY_SERVER = "jetty-server";
 
    private JettyHttpServer httpServer;
 
@@ -59,8 +66,9 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
       if (httpServer == null)
       {
          List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(allTestMethods);
+         List<GroovyServiceSource> groovySercices = getGroovyServices(allTestMethods);
 
-         if (factories.size() > 0)
+         if (factories.size() > 0 || groovySercices.size() > 0 || hasDataProviderAnnotation(allTestMethods))
          {
             httpServer = new JettyHttpServer();
             context.setAttribute(JETTY_PORT, httpServer.getPort());
@@ -143,6 +151,72 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
       return factories;
    }
 
+   private boolean hasDataProviderAnnotation(ITestNGMethod... testMethods)
+   {
+      List<ObjectFactory<AbstractResourceDescriptor>> factories =
+         new ArrayList<ObjectFactory<AbstractResourceDescriptor>>();
+      for (ITestNGMethod testMethod : testMethods)
+      {
+         Object instance = testMethod.getInstance();
+         if (hasEverrestJettyListenerTestHierarchy(instance.getClass()))
+         {
+            Method[] methods = instance.getClass().getMethods();
+            for (Method method : methods)
+            {
+               if (method.isAnnotationPresent(DataProvider.class))
+               {
+                  return true;
+               }
+            }
+
+         }
+      }
+      return false;
+   }
+
+   private List<GroovyServiceSource> getGroovyServices(ITestNGMethod... testMethods)
+   {
+      List<GroovyServiceSource> factories =
+         new ArrayList<GroovyServiceSource>();
+      for (ITestNGMethod testMethod : testMethods)
+      {
+         Object instance = testMethod.getInstance();
+         if (hasEverrestJettyListenerTestHierarchy(instance.getClass()))
+         {
+            Field[] fields = instance.getClass().getDeclaredFields();
+            for (Field field : fields)
+            {
+               if (GroovyServiceSource.class.isAssignableFrom(field.getType()))
+               {
+                  try
+                  {
+                     field.setAccessible(true);
+                     factories.add((GroovyServiceSource)field.get(instance));
+                  }
+                  catch (SecurityException e)
+                  {
+                     LOG.error(e.getLocalizedMessage(), e);
+                     throw new RuntimeException(e.getLocalizedMessage(), e);
+                  }
+                  catch (IllegalArgumentException e)
+                  {
+                     LOG.error(e.getLocalizedMessage(), e);
+                     throw new RuntimeException(e.getLocalizedMessage(), e);
+                  }
+                  catch (IllegalAccessException e)
+                  {
+                     LOG.error(e.getLocalizedMessage(), e);
+                     throw new RuntimeException(e.getLocalizedMessage(), e);
+                  }
+
+               }
+            }
+
+         }
+      }
+      return factories;
+   }
+
    private boolean isRestResource(Class<? extends Object> resourceClass)
    {
       return resourceClass.isAnnotationPresent(Path.class) || resourceClass.isAnnotationPresent(Provider.class)
@@ -189,8 +263,10 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
       if (httpServer != null && hasEverrestJettyListener(method.getTestMethod().getInstance().getClass()))
       {
          List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(method.getTestMethod());
+         List<GroovyServiceSource> groovySercices = getGroovyServices(method.getTestMethod());
          httpServer.resetFactories();
          httpServer.setFactories(factories);
+         httpServer.setGroovyServices(groovySercices);
       }
    }
 
