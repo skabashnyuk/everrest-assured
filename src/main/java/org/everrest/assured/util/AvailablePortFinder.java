@@ -1,4 +1,4 @@
-package org.everrest.assured;
+package org.everrest.assured.util;
 /*
  * Copyright (C) 2011 eXo Platform SAS.
  *

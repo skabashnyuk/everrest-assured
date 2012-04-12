@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.everrest.assured;
+package org.everrest.assured.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,42 +30,27 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 /**
- *  
+ * Utility class for io operations.
  */
-public class FileGroovyServiceSource implements GroovyServiceSource
+public class IoUtil
 {
 
-   private static final Logger LOG = LoggerFactory.getLogger(FileGroovyServiceSource.class);
+   private static final Logger LOG = LoggerFactory.getLogger(IoUtil.class);
 
-   private final String fileName;
-
-   /**
-    * @param fileName
-    */
-   public FileGroovyServiceSource(String fileName)
-   {
-      super();
-      this.fileName = fileName;
-   }
-
-   /**
-    * @see org.everrest.assured.GroovyServiceSource#getSource()
-    */
-   @Override
-   public String getSource()
+   public static String getResource(String resourceName)
    {
 
       InputStream stream = null;
       try
       {
-         File file = new File(fileName);
+         File file = new File(resourceName);
          if (file.isFile() && file.exists())
          {
             stream = new FileInputStream(file);
          }
          else
          {
-            stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName);
+            stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
          }
          Reader reader = new BufferedReader(new InputStreamReader(stream));
          StringBuilder builder = new StringBuilder();
@@ -98,14 +83,4 @@ public class FileGroovyServiceSource implements GroovyServiceSource
       }
       return "";
    }
-
-   /**
-    * @see org.everrest.assured.GroovyServiceSource#getResourceId()
-    */
-   @Override
-   public String getResourceId()
-   {
-      return fileName;
-   }
-
 }

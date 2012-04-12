@@ -18,12 +18,14 @@
  */
 package org.everrest.assured;
 
+import static com.jayway.restassured.RestAssured.expect;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.everrest.sample.book.Book;
 import org.everrest.sample.book.BookService;
 import org.everrest.sample.book.BookStorage;
+import org.hamcrest.Matchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
@@ -35,9 +37,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- *
+ * 
  */
-@Listeners(value = MockitoTestNGListener.class)
+@Listeners(value = {EverrestJetty.class, MockitoTestNGListener.class})
 public class BookServiceTest
 {
    @Mock
@@ -55,7 +57,10 @@ public class BookServiceTest
       bookCollection.add(book);
       when(bookStorage.getAll()).thenReturn(bookCollection);
 
-      bookService.getAll();
+      //unsecure call to rest service
+      expect()
+         .body("id", Matchers.hasItem("123-1235-555"))
+         .when().get("/books");
 
       verify(bookStorage).getAll();
    }

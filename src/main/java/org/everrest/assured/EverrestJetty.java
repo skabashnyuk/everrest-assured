@@ -1,5 +1,7 @@
 package org.everrest.assured;
 
+import com.jayway.restassured.RestAssured;
+
 import org.everrest.core.Filter;
 import org.everrest.core.ObjectFactory;
 import org.everrest.core.resource.AbstractResourceDescriptor;
@@ -12,11 +14,9 @@ import org.testng.ITestListener;
 import org.testng.ITestNGListener;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Listeners;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,33 +48,41 @@ import javax.ws.rs.ext.Provider;
 public class EverrestJetty implements ITestListener, IInvokedMethodListener
 {
 
-   private static final Logger LOG = LoggerFactory.getLogger(EverrestJetty.class);
-
    public final static String JETTY_PORT = "jetty-port";
 
    public final static String JETTY_SERVER = "jetty-server";
 
+   private static final Logger LOG = LoggerFactory.getLogger(EverrestJetty.class);
+
    private JettyHttpServer httpServer;
 
-   public void onStart(ITestContext context)
+   /**
+    * @see org.testng.IInvokedMethodListener#afterInvocation(org.testng.IInvokedMethod,
+    *      org.testng.ITestResult)
+    */
+   @Override
+   public void afterInvocation(IInvokedMethod method, ITestResult testResult)
    {
-      ITestNGMethod[] allTestMethods = context.getAllTestMethods();
-      if (allTestMethods == null)
+      if (httpServer != null && hasEverrestJettyListener(method.getTestMethod().getInstance().getClass()))
       {
-         return;
+         List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(method.getTestMethod());
+         httpServer.resetFactories();
       }
-      if (httpServer == null)
-      {
-         List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(allTestMethods);
-         List<GroovyServiceSource> groovySercices = getGroovyServices(allTestMethods);
 
-         if (factories.size() > 0 || groovySercices.size() > 0 || hasDataProviderAnnotation(allTestMethods))
-         {
-            httpServer = new JettyHttpServer();
-            context.setAttribute(JETTY_PORT, httpServer.getPort());
-            context.setAttribute(JETTY_SERVER, httpServer);
-            httpServer.start();
-         }
+   }
+
+   /**
+    * @see org.testng.IInvokedMethodListener#beforeInvocation(org.testng.IInvokedMethod,
+    *      org.testng.ITestResult)
+    */
+   @Override
+   public void beforeInvocation(IInvokedMethod method, ITestResult testResult)
+   {
+      if (httpServer != null && hasEverrestJettyListener(method.getTestMethod().getInstance().getClass()))
+      {
+         List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(method.getTestMethod());
+         httpServer.resetFactories();
+         httpServer.setFactories(factories);
       }
    }
 
@@ -83,24 +91,52 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
       JettyHttpServer httpServer = (JettyHttpServer)context.getAttribute(JETTY_SERVER);
       if (httpServer != null)
       {
-         httpServer.stop();
-         httpServer = null;
+         try
+         {
+            httpServer.stop();
+            httpServer = null;
+         }
+         catch (Exception e)
+         {
+            LOG.error(e.getLocalizedMessage(), e);
+            throw new RuntimeException(e.getLocalizedMessage(), e);
+         }
+
+      }
+   }
+
+   public void onStart(ITestContext context)
+   {
+      ITestNGMethod[] allTestMethods = context.getAllTestMethods();
+      if (allTestMethods == null)
+      {
+         return;
+      }
+      if (httpServer == null && hasEverrestJettyListenerTestHierarchy(allTestMethods))
+      {
+         httpServer = new JettyHttpServer();
+         context.setAttribute(JETTY_PORT, httpServer.getPort());
+         context.setAttribute(JETTY_SERVER, httpServer);
+
+         try
+         {
+            httpServer.start();
+            RestAssured.port = httpServer.getPort();
+            RestAssured.basePath = JettyHttpServer.UNSECURE_REST;
+         }
+         catch (Exception e)
+         {
+            LOG.error(e.getLocalizedMessage(), e);
+            throw new RuntimeException(e.getLocalizedMessage(), e);
+         }
       }
    }
 
    /**
-    * @see org.testng.ITestListener#onTestStart(org.testng.ITestResult)
+    * @see org.testng.ITestListener#onTestFailedButWithinSuccessPercentage(org.testng.ITestResult)
     */
    @Override
-   public void onTestStart(ITestResult result)
-   {
-   }
-
-   /**
-    * @see org.testng.ITestListener#onTestSuccess(org.testng.ITestResult)
-    */
-   @Override
-   public void onTestSuccess(ITestResult result)
+   public void onTestFailedButWithinSuccessPercentage(ITestResult result)
    {
    }
 
@@ -121,10 +157,18 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
    }
 
    /**
-    * @see org.testng.ITestListener#onTestFailedButWithinSuccessPercentage(org.testng.ITestResult)
+    * @see org.testng.ITestListener#onTestStart(org.testng.ITestResult)
     */
    @Override
-   public void onTestFailedButWithinSuccessPercentage(ITestResult result)
+   public void onTestStart(ITestResult result)
+   {
+   }
+
+   /**
+    * @see org.testng.ITestListener#onTestSuccess(org.testng.ITestResult)
+    */
+   @Override
+   public void onTestSuccess(ITestResult result)
    {
    }
 
@@ -151,90 +195,6 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
       return factories;
    }
 
-   private boolean hasDataProviderAnnotation(ITestNGMethod... testMethods)
-   {
-      List<ObjectFactory<AbstractResourceDescriptor>> factories =
-         new ArrayList<ObjectFactory<AbstractResourceDescriptor>>();
-      for (ITestNGMethod testMethod : testMethods)
-      {
-         Object instance = testMethod.getInstance();
-         if (hasEverrestJettyListenerTestHierarchy(instance.getClass()))
-         {
-            Method[] methods = instance.getClass().getMethods();
-            for (Method method : methods)
-            {
-               if (method.isAnnotationPresent(DataProvider.class))
-               {
-                  return true;
-               }
-            }
-
-         }
-      }
-      return false;
-   }
-
-   private List<GroovyServiceSource> getGroovyServices(ITestNGMethod... testMethods)
-   {
-      List<GroovyServiceSource> factories =
-         new ArrayList<GroovyServiceSource>();
-      for (ITestNGMethod testMethod : testMethods)
-      {
-         Object instance = testMethod.getInstance();
-         if (hasEverrestJettyListenerTestHierarchy(instance.getClass()))
-         {
-            Field[] fields = instance.getClass().getDeclaredFields();
-            for (Field field : fields)
-            {
-               if (GroovyServiceSource.class.isAssignableFrom(field.getType()))
-               {
-                  try
-                  {
-                     field.setAccessible(true);
-                     factories.add((GroovyServiceSource)field.get(instance));
-                  }
-                  catch (SecurityException e)
-                  {
-                     LOG.error(e.getLocalizedMessage(), e);
-                     throw new RuntimeException(e.getLocalizedMessage(), e);
-                  }
-                  catch (IllegalArgumentException e)
-                  {
-                     LOG.error(e.getLocalizedMessage(), e);
-                     throw new RuntimeException(e.getLocalizedMessage(), e);
-                  }
-                  catch (IllegalAccessException e)
-                  {
-                     LOG.error(e.getLocalizedMessage(), e);
-                     throw new RuntimeException(e.getLocalizedMessage(), e);
-                  }
-
-               }
-            }
-
-         }
-      }
-      return factories;
-   }
-
-   private boolean isRestResource(Class<? extends Object> resourceClass)
-   {
-      return resourceClass.isAnnotationPresent(Path.class) || resourceClass.isAnnotationPresent(Provider.class)
-         || resourceClass.isAnnotationPresent(Filter.class);
-   }
-
-   private boolean hasEverrestJettyListenerTestHierarchy(Class<?> testClass)
-   {
-      for (Class<?> clazz = testClass; clazz != Object.class; clazz = clazz.getSuperclass())
-      {
-         if (hasEverrestJettyListener(clazz))
-         {
-            return true;
-         }
-      }
-      return false;
-   }
-
    private boolean hasEverrestJettyListener(Class<?> clazz)
    {
       Listeners listeners = clazz.getAnnotation(Listeners.class);
@@ -253,36 +213,35 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
       return false;
    }
 
-   /**
-    * @see org.testng.IInvokedMethodListener#beforeInvocation(org.testng.IInvokedMethod,
-    *      org.testng.ITestResult)
-    */
-   @Override
-   public void beforeInvocation(IInvokedMethod method, ITestResult testResult)
+   private boolean hasEverrestJettyListenerTestHierarchy(Class<?> testClass)
    {
-      if (httpServer != null && hasEverrestJettyListener(method.getTestMethod().getInstance().getClass()))
+      for (Class<?> clazz = testClass; clazz != Object.class; clazz = clazz.getSuperclass())
       {
-         List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(method.getTestMethod());
-         List<GroovyServiceSource> groovySercices = getGroovyServices(method.getTestMethod());
-         httpServer.resetFactories();
-         httpServer.setFactories(factories);
-         httpServer.setGroovyServices(groovySercices);
+         if (hasEverrestJettyListener(clazz))
+         {
+            return true;
+         }
       }
+      return false;
    }
 
-   /**
-    * @see org.testng.IInvokedMethodListener#afterInvocation(org.testng.IInvokedMethod,
-    *      org.testng.ITestResult)
-    */
-   @Override
-   public void afterInvocation(IInvokedMethod method, ITestResult testResult)
+   private boolean hasEverrestJettyListenerTestHierarchy(ITestNGMethod... testMethods)
    {
-      if (httpServer != null && hasEverrestJettyListener(method.getTestMethod().getInstance().getClass()))
+      for (ITestNGMethod testMethod : testMethods)
       {
-         List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(method.getTestMethod());
-         httpServer.resetFactories();
+         Object instance = testMethod.getInstance();
+         if (hasEverrestJettyListenerTestHierarchy(instance.getClass()))
+         {
+            return true;
+         }
       }
+      return false;
+   }
 
+   private boolean isRestResource(Class<? extends Object> resourceClass)
+   {
+      return resourceClass.isAnnotationPresent(Path.class) || resourceClass.isAnnotationPresent(Provider.class)
+         || resourceClass.isAnnotationPresent(Filter.class);
    }
 
 }

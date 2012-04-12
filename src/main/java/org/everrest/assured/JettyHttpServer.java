@@ -22,7 +22,6 @@ package org.everrest.assured;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
-import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
@@ -30,11 +29,12 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
+import org.everrest.assured.util.AvailablePortFinder;
+import org.everrest.assured.util.IoUtil;
 import org.everrest.core.DependencySupplier;
 import org.everrest.core.ObjectFactory;
 import org.everrest.core.ResourceBinder;
 import org.everrest.core.impl.ApplicationProviderBinder;
-import org.everrest.core.impl.EnvironmentContext;
 import org.everrest.core.impl.EverrestConfiguration;
 import org.everrest.core.impl.RequestDispatcher;
 import org.everrest.core.impl.RequestHandlerImpl;
@@ -42,29 +42,14 @@ import org.everrest.core.impl.ResourceBinderImpl;
 import org.everrest.core.resource.AbstractResourceDescriptor;
 import org.everrest.core.servlet.EverrestInitializedListener;
 import org.everrest.core.servlet.EverrestServlet;
-import org.everrest.core.tools.DummySecurityContext;
 import org.everrest.core.tools.ResourceLauncher;
 import org.everrest.groovy.BaseResourceId;
 import org.everrest.groovy.GroovyResourcePublisher;
-import org.everrest.test.mock.MockPrincipal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.security.Principal;
 import java.util.EventListener;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.ws.rs.core.SecurityContext;
 
 /**
  * 
@@ -73,6 +58,16 @@ public class JettyHttpServer
 {
 
    private static final Logger LOG = LoggerFactory.getLogger(JettyHttpServer.class);
+
+   public static final String UNSECURE_REST = "/rest";
+
+   public static final String UNSECURE_PATH_SPEC = UNSECURE_REST + "/*";
+
+   public static final String SECURE_PATH = "/private";
+
+   public static final String SECURE_REST = UNSECURE_REST + SECURE_PATH;
+
+   public static final String SECURE_PATH_SPEC = SECURE_REST + "/*";
 
    protected ServletContextHandler context;
 
@@ -89,8 +84,6 @@ public class JettyHttpServer
    public final static String MANAGER_USER_PASSWORD = "manager";
 
    public final static String UNAUTHORIZED_USER = "user";
-
-   private List<Object> restServices;
 
    /**
     * 
@@ -112,50 +105,59 @@ public class JettyHttpServer
       return port;
    }
 
-   public void start()
+   public void start() throws Exception
    {
       RequestLogHandler handler = new RequestLogHandler();
 
       if (context == null)
       {
-         context = new ServletContextHandler(handler, getContextPath(), ServletContextHandler.SESSIONS);
+         context = new ServletContextHandler(handler, "/", ServletContextHandler.SESSIONS);
       }
 
-      context.setEventListeners(getEventListeners());
+      context.setEventListeners(new EventListener[]{new EverrestInitializedListener()});
       ServletHolder servletHolder = new ServletHolder(new EverrestServlet());
 
-      initParams(context.getInitParams());
+      context.addServlet(servletHolder, UNSECURE_PATH_SPEC);
+      context.addServlet(servletHolder, SECURE_PATH_SPEC);
 
-      context.addServlet(servletHolder, "/rest/*");
+      //set up security
+      Constraint constraint = new Constraint();
+      constraint.setName(Constraint.__BASIC_AUTH);
+      constraint.setRoles(new String[]{"cloud-admin"});
+      constraint.setAuthenticate(true);
 
-      context.addServlet(servletHolder, "/rest/private/*");
+      ConstraintMapping constraintMapping = new ConstraintMapping();
+      constraintMapping.setConstraint(constraint);
+      constraintMapping.setPathSpec(SECURE_PATH_SPEC);
 
-      setContextAttributes(context);
+      ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+      securityHandler.addConstraintMapping(constraintMapping);
 
-      SecurityHandler securityHandler = getSecurityHandler();
+      HashLoginService loginService = new HashLoginService();
+      loginService.putUser(ADMIN_USER_NAME, new Password(ADMIN_USER_PASSWORD), new String[]{"cloud-admin"});
+      loginService.putUser(MANAGER_USER_NAME, new Password(MANAGER_USER_PASSWORD), new String[]{"cloud-admin"});
 
-      if (securityHandler != null)
-      {
-         context.setSecurityHandler(securityHandler);
-      }
+      securityHandler.setLoginService(loginService);
+      securityHandler.setAuthenticator(new BasicAuthenticator());
+
+      context.setSecurityHandler(securityHandler);
 
       server.setHandler(handler);
-      try
-      {
-         server.start();
-         ResourceBinder binder =
-            (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
-         DependencySupplier dependencies =
-            (DependencySupplier)context.getServletContext().getAttribute(DependencySupplier.class.getName());
-         GroovyResourcePublisher groovyPublisher = new GroovyResourcePublisher(binder, dependencies);
-         context.getServletContext().setAttribute(GroovyResourcePublisher.class.getName(), groovyPublisher);
 
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-         throw new RuntimeException(e.getLocalizedMessage(), e);
-      }
+      server.start();
+      ResourceBinder binder =
+         (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
+      DependencySupplier dependencies =
+         (DependencySupplier)context.getServletContext().getAttribute(DependencySupplier.class.getName());
+      GroovyResourcePublisher groovyPublisher = new GroovyResourcePublisher(binder, dependencies);
+      context.getServletContext().setAttribute(GroovyResourcePublisher.class.getName(), groovyPublisher);
+
+   }
+
+   public void stop() throws Exception
+   {
+      context = null;
+      server.stop();
 
    }
 
@@ -168,30 +170,13 @@ public class JettyHttpServer
       }
    }
 
-   /**
-    * @param groovySercices
-    */
-   public void setGroovyServices(List<GroovyServiceSource> groovySercices)
-   {
-      GroovyResourcePublisher groovyPublisher =
-         (GroovyResourcePublisher)context.getServletContext().getAttribute(GroovyResourcePublisher.class.getName());
-
-      for (GroovyServiceSource groovyServiceSource : groovySercices)
-      {
-         groovyPublisher.publishPerRequest(groovyServiceSource.getSource(),
-            new BaseResourceId(groovyServiceSource.getResourceId()), null,
-            null, null);
-      }
-
-   }
-
    public void publishPerRequestGroovyScript(String resourcePath, String name)
    {
       GroovyResourcePublisher groovyPublisher =
          (GroovyResourcePublisher)context.getServletContext().getAttribute(GroovyResourcePublisher.class.getName());
 
       BaseResourceId publishedResourceId = new BaseResourceId(name);
-      groovyPublisher.publishPerRequest(getSource(resourcePath), publishedResourceId, null, null, null);
+      groovyPublisher.publishPerRequest(IoUtil.getResource(resourcePath), publishedResourceId, null, null, null);
    }
 
    /**
@@ -220,179 +205,4 @@ public class JettyHttpServer
          new EverrestConfiguration()));
    }
 
-   public void stop()
-   {
-      context = null;
-      try
-      {
-         server.stop();
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException(e.getLocalizedMessage(), e);
-      }
-   }
-
-   public boolean isStopped()
-   {
-      return server.isStopped();
-   }
-
-   public boolean isRunning()
-   {
-      return server.isRunning();
-   }
-
-   public boolean isStarted()
-   {
-      return server.isStarted();
-   }
-
-   protected String getContextPath()
-   {
-      return "/";
-   }
-
-   protected void setContextAttributes(ServletContextHandler context)
-   {
-   }
-
-   protected EventListener[] getEventListeners()
-   {
-      return new EventListener[]{new EverrestInitializedListener()};
-   }
-
-   protected SecurityHandler getSecurityHandler()
-   {
-      //set up security
-      Constraint constraint = new Constraint();
-      constraint.setName(Constraint.__BASIC_AUTH);
-      constraint.setRoles(new String[]{"cloud-admin"});
-      constraint.setAuthenticate(true);
-
-      ConstraintMapping constraintMapping = new ConstraintMapping();
-      constraintMapping.setConstraint(constraint);
-      constraintMapping.setPathSpec("/" + getSecureRestPath() + "/*");
-
-      ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
-      securityHandler.addConstraintMapping(constraintMapping);
-
-      HashLoginService loginService = new HashLoginService();
-      loginService.putUser(ADMIN_USER_NAME, new Password(ADMIN_USER_PASSWORD), new String[]{"cloud-admin"});
-
-      loginService.putUser(MANAGER_USER_NAME, new Password(MANAGER_USER_PASSWORD), new String[]{"cloud-admin"});
-
-      securityHandler.setLoginService(loginService);
-      securityHandler.setAuthenticator(new BasicAuthenticator());
-      return securityHandler;
-   }
-
-   protected String getSecureRestPath()
-   {
-      return "rest";
-   }
-
-   public String getRestUri(boolean secure)
-   {
-      StringBuffer buffer = new StringBuffer();
-      buffer.append("http://localhost:");
-      buffer.append(port);
-      buffer.append(getContextPath());
-      if (secure)
-      {
-         buffer.append(getSecureRestPath());
-      }
-      else
-      {
-         buffer.append("rest");
-      }
-
-      return buffer.toString();
-   }
-
-   public String getRestUri()
-   {
-      StringBuffer buffer = new StringBuffer();
-      buffer.append("http://localhost:");
-      buffer.append(port);
-      buffer.append(getContextPath());
-      buffer.append("rest");
-      return buffer.toString();
-   }
-
-   protected void initParams(Map<String, String> params)
-   {
-   }
-
-   public EnvironmentContext getUnsecureEnvironment()
-   {
-      Principal userPrincipal = new MockPrincipal("user");
-      Set<String> userRoles = new HashSet<String>();
-      userRoles.add("users");
-
-      SecurityContext userSctx = new DummySecurityContext(userPrincipal, userRoles);
-      EnvironmentContext unsecureEnvironment = new EnvironmentContext();
-      unsecureEnvironment.put(SecurityContext.class, userSctx);
-      return unsecureEnvironment;
-   }
-
-   public EnvironmentContext getSecureEnvironment()
-   {
-      Principal adminPrincipal = new MockPrincipal("cldadmin");
-      Set<String> adminRoles = new HashSet<String>();
-      adminRoles.add("users");
-      adminRoles.add("cloud-admin");
-
-      SecurityContext adminSctx = new DummySecurityContext(adminPrincipal, adminRoles);
-      EnvironmentContext secureEnvironment = new EnvironmentContext();
-      secureEnvironment.put(SecurityContext.class, adminSctx);
-      return secureEnvironment;
-   }
-
-   public String getSource(String resourceName)
-   {
-
-      InputStream stream = null;
-      try
-      {
-         File file = new File(resourceName);
-         if (file.isFile() && file.exists())
-         {
-            stream = new FileInputStream(file);
-         }
-         else
-         {
-            stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
-         }
-         Reader reader = new BufferedReader(new InputStreamReader(stream));
-         StringBuilder builder = new StringBuilder();
-         char[] buffer = new char[8192];
-         int read;
-         while ((read = reader.read(buffer, 0, buffer.length)) > 0)
-         {
-            builder.append(buffer, 0, read);
-         }
-         return builder.toString();
-      }
-      catch (IOException e)
-      {
-         LOG.error(e.getLocalizedMessage(), e);
-
-      }
-      finally
-      {
-         if (stream != null)
-         {
-            try
-            {
-               stream.close();
-            }
-            catch (IOException e)
-            {
-               LOG.error(e.getLocalizedMessage(), e);
-            }
-         }
-      }
-      return "";
-   }
 }

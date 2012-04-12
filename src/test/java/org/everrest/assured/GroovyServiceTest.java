@@ -18,8 +18,8 @@
  */
 package org.everrest.assured;
 
-import static com.jayway.restassured.RestAssured.given;
-import static org.everrest.assured.EverrestJetty.JETTY_PORT;
+import static com.jayway.restassured.RestAssured.expect;
+import static org.everrest.assured.EverrestJetty.JETTY_SERVER;
 
 import org.hamcrest.Matchers;
 import org.testng.ITestContext;
@@ -32,23 +32,18 @@ import org.testng.annotations.Test;
 @Listeners(value = {EverrestJetty.class})
 public class GroovyServiceTest
 {
-   private final GroovyServiceSource groovySource = new FileGroovyServiceSource("a/b/GroovyResource1.groovy");
 
    @Test
    public void testName(ITestContext context) throws Exception
    {
+      JettyHttpServer httpServer = (JettyHttpServer)context.getAttribute(JETTY_SERVER);
+      httpServer.publishPerRequestGroovyScript("a/b/GroovyResource1.groovy", "GroovyResource1");
 
-      given()
-         //.log().all(true)
-         .port((Integer)context.getAttribute(JETTY_PORT))
-         .auth().basic("cldadmin", "tomcat")
-
-         .expect()
+      expect()
          .statusCode(200)
          .body(Matchers.containsString("GroovyResource1"))
 
          .when()
-         //.log().all()
-         .get("/rest/a/b");
+         .get("/a/b");
    }
 }
