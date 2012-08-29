@@ -36,6 +36,7 @@ import org.everrest.core.ObjectFactory;
 import org.everrest.core.ResourceBinder;
 import org.everrest.core.impl.ApplicationProviderBinder;
 import org.everrest.core.impl.EverrestConfiguration;
+import org.everrest.core.impl.ProviderBinder;
 import org.everrest.core.impl.RequestDispatcher;
 import org.everrest.core.impl.RequestHandlerImpl;
 import org.everrest.core.impl.ResourceBinderImpl;
@@ -50,6 +51,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.EventListener;
 import java.util.List;
+import javax.ws.rs.ext.ExceptionMapper;
 
 /**
  * 
@@ -167,6 +169,17 @@ public class JettyHttpServer
       for (ObjectFactory<AbstractResourceDescriptor> resource : factories)
       {
          binder.addResource(resource);
+      }
+   }
+
+
+
+   public void setExceptionMappers(List<ExceptionMapper> mappers)
+   {
+      ProviderBinder providers = (ProviderBinder)context.getServletContext().getAttribute(ApplicationProviderBinder.class.getName());
+      for (ExceptionMapper mapper : mappers)
+      {
+         providers.addExceptionMapper(mapper);
       }
    }
 

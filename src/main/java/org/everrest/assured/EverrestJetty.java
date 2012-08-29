@@ -19,8 +19,8 @@ import org.testng.annotations.Listeners;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.ws.rs.Path;
+import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 /*
@@ -43,7 +43,7 @@ import javax.ws.rs.ext.Provider;
  */
 
 /**
- * 
+ *
  */
 public class EverrestJetty implements ITestListener, IInvokedMethodListener
 {
@@ -115,12 +115,14 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
       if (httpServer == null && hasEverrestJettyListenerTestHierarchy(allTestMethods))
       {
          httpServer = new JettyHttpServer();
+
          context.setAttribute(JETTY_PORT, httpServer.getPort());
          context.setAttribute(JETTY_SERVER, httpServer);
 
          try
          {
             httpServer.start();
+            httpServer.setExceptionMappers(getExceptionMappers(allTestMethods));
             RestAssured.port = httpServer.getPort();
             RestAssured.basePath = JettyHttpServer.UNSECURE_REST;
          }
@@ -174,8 +176,8 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
 
    private List<ObjectFactory<AbstractResourceDescriptor>> getResourcesFactories(ITestNGMethod... testMethods)
    {
-      List<ObjectFactory<AbstractResourceDescriptor>> factories =
-         new ArrayList<ObjectFactory<AbstractResourceDescriptor>>();
+      List<ObjectFactory<AbstractResourceDescriptor>> factories = new
+         ArrayList<ObjectFactory<AbstractResourceDescriptor>>();
       for (ITestNGMethod testMethod : testMethods)
       {
          Object instance = testMethod.getInstance();
@@ -187,6 +189,37 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
                if (isRestResource(field.getType()))
                {
                   factories.add(new TestResourceFactory(field.getType(), instance, field));
+               }
+            }
+
+         }
+      }
+      return factories;
+   }
+
+   private List<ExceptionMapper> getExceptionMappers(ITestNGMethod... testMethods)
+   {
+      List<ExceptionMapper> factories = new ArrayList<ExceptionMapper>();
+      for (ITestNGMethod testMethod : testMethods)
+      {
+         Object instance = testMethod.getInstance();
+         if (hasEverrestJettyListenerTestHierarchy(instance.getClass()))
+         {
+            Field[] fields = instance.getClass().getDeclaredFields();
+            for (Field field : fields)
+            {
+               if (field.getType().isAssignableFrom(ExceptionMapper.class))
+               {
+                  field.setAccessible(true);
+                  try
+                  {
+                     factories.add((ExceptionMapper)field.get(instance));
+                  }
+                  catch (IllegalAccessException e)
+                  {
+                     LOG.error(e.getLocalizedMessage(), e);
+                  }
+                  ;
                }
             }
 
@@ -240,8 +273,8 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
 
    private boolean isRestResource(Class<? extends Object> resourceClass)
    {
-      return resourceClass.isAnnotationPresent(Path.class) || resourceClass.isAnnotationPresent(Provider.class)
-         || resourceClass.isAnnotationPresent(Filter.class);
+      return resourceClass.isAnnotationPresent(Path.class) || resourceClass.isAnnotationPresent(Provider.class) ||
+         resourceClass.isAnnotationPresent(Filter.class);
    }
 
 }
