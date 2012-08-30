@@ -125,7 +125,7 @@ public class JettyHttpServer
       //set up security
       Constraint constraint = new Constraint();
       constraint.setName(Constraint.__BASIC_AUTH);
-      constraint.setRoles(new String[]{"cloud-admin"});
+      constraint.setRoles(new String[]{"cloud-admin", "users"});
       constraint.setAuthenticate(true);
 
       ConstraintMapping constraintMapping = new ConstraintMapping();
@@ -136,8 +136,9 @@ public class JettyHttpServer
       securityHandler.addConstraintMapping(constraintMapping);
 
       HashLoginService loginService = new HashLoginService();
-      loginService.putUser(ADMIN_USER_NAME, new Password(ADMIN_USER_PASSWORD), new String[]{"cloud-admin"});
-      loginService.putUser(MANAGER_USER_NAME, new Password(MANAGER_USER_PASSWORD), new String[]{"cloud-admin"});
+      loginService.putUser(ADMIN_USER_NAME, new Password(ADMIN_USER_PASSWORD), new String[]{"cloud-admin", "users"});
+      loginService.putUser(MANAGER_USER_NAME, new Password(MANAGER_USER_PASSWORD), new String[]{"cloud-admin",
+         "users"});
 
       securityHandler.setLoginService(loginService);
       securityHandler.setAuthenticator(new BasicAuthenticator());
