@@ -5,8 +5,15 @@
 .project
 .settings/
 target/
-test-output/
 bin/
+test-output/
+
+# Idea #
+##################
+*.iml
+*.ipr
+*.iws
+.idea/
 
 # Compiled source #
 ###################
@@ -32,6 +39,7 @@ bin/
 *.zip
 *.war
 *.ear
+
 
 
 # Logs and databases #
