@@ -69,27 +69,45 @@
       </pluginRepository>
    </pluginRepositories>
 
+    <prerequisites>
+        <maven>3.0.4</maven>
+    </prerequisites>
 
-   <properties>
-      <exo.snapshots.repo.url>dav:http://repository.exoplatform.org/content/repositories/thirdparty-snapshots/</exo.snapshots.repo.url>
-      <maven.compiler.optimize>true</maven.compiler.optimize>
-      <maven.compiler.source>1.6</maven.compiler.source>
-      <maven.compiler.target>1.6</maven.compiler.target>
-      <version.buildnumber.plugin>1.0</version.buildnumber.plugin>
-      <!-- Repositories URLs -->
-      <everrest.releases.repo.url>http://repository.exoplatform.org/content/repositories/thirdparty/</everrest.releases.repo.url>
-      <everrest.snapshots.repo.url>http://repository.exoplatform.org/content/repositories/thirdparty-snapshots/</everrest.snapshots.repo.url>
+    <properties>
+        <exo.snapshots.repo.url>dav:http://repository.exoplatform.org/content/repositories/thirdparty-snapshots/</exo.snapshots.repo.url>
+        <maven.compiler.optimize>true</maven.compiler.optimize>
+        <maven.compiler.source>1.6</maven.compiler.source>
+        <maven.compiler.target>1.6</maven.compiler.target>
+        <version.buildnumber.plugin>1.0</version.buildnumber.plugin>
+        <!-- Repositories URLs -->
+        <everrest.releases.repo.url>http://repository.exoplatform.org/content/repositories/thirdparty/</everrest.releases.repo.url>
+        <everrest.snapshots.repo.url>http://repository.exoplatform.org/content/repositories/thirdparty-snapshots/</everrest.snapshots.repo.url>
 
-      <!-- Encoding -->
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Encoding -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Dependencies version -->
+        <mockito.version>1.9.5</mockito.version>
+        <testng.version>6.8</testng.version>
+
+        <everrest.versoon>1.0.10</everrest.versoon>
+        <resetassured.version>1.6</resetassured.version>
+        <jetty.version>8.1.0.v20120127</jetty.version>
    </properties>
 
-   <prerequisites>
-      <maven>3.0.4</maven>
-   </prerequisites>
-
-
    <dependencies>
+
+       <dependency>
+           <groupId>org.testng</groupId>
+           <artifactId>testng</artifactId>
+           <scope>provided</scope>
+           <version>${testng.version}</version>
+       </dependency>
+       <dependency>
+           <groupId>org.mockito</groupId>
+           <artifactId>mockito-all</artifactId>
+           <version>${mockito.version}</version>
+       </dependency>
 
       <!-- Logger -->
       <dependency>
@@ -102,13 +120,13 @@
       <dependency>
          <groupId>org.everrest</groupId>
          <artifactId>everrest-core</artifactId>
-         <version>1.0.2</version>
+         <version>${everrest.versoon}</version>
       </dependency>
 
       <dependency>
          <groupId>org.everrest</groupId>
          <artifactId>everrest-groovy</artifactId>
-         <version>1.0.10</version>
+         <version>${everrest.versoon}</version>
       </dependency>
 
       <dependency>
@@ -121,21 +139,14 @@
       <dependency>
          <groupId>org.everrest</groupId>
          <artifactId>everrest-test</artifactId>
-         <version>1.0.10</version>
+         <version>${everrest.versoon}</version>
       </dependency>
 
 
       <dependency>
          <groupId>com.jayway.restassured</groupId>
          <artifactId>rest-assured</artifactId>
-         <version>1.6</version>
-      </dependency>
-
-      <dependency>
-         <groupId>org.testng</groupId>
-         <artifactId>testng</artifactId>
-         <scope>provided</scope>
-         <version>6.8</version>
+         <version>${resetassured.version}</version>
       </dependency>
 
       <dependency>
@@ -147,26 +158,19 @@
       <dependency>
          <groupId>org.eclipse.jetty</groupId>
          <artifactId>jetty-http</artifactId>
-         <version>8.1.0.v20120127</version>
+         <version>${jetty.version}</version>
       </dependency>
 
       <dependency>
          <groupId>org.eclipse.jetty</groupId>
          <artifactId>jetty-server</artifactId>
-         <version>8.1.0.v20120127</version>
+         <version>${jetty.version}</version>
       </dependency>
 
       <dependency>
          <groupId>org.eclipse.jetty</groupId>
          <artifactId>jetty-servlet</artifactId>
-         <version>8.1.0.v20120127</version>
-      </dependency>
-
-      <dependency>
-         <groupId>org.mockito</groupId>
-         <artifactId>mockito-all</artifactId>
-         <version>1.9.5</version>
-         <scope>test</scope>
+         <version>${jetty.version}</version>
       </dependency>
 
    </dependencies>
