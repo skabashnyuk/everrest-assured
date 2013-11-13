@@ -24,19 +24,15 @@
    <distributionManagement>
       <repository>
          <id>repository.exoplatform.org</id>
-         <url>${everrest.releases.repo.url}</url>
+         <url>${maven.releases.repo.url}</url>
       </repository>
-      <snapshotRepository>
-         <id>repository.exoplatform.org</id>
-         <url>${everrest.snapshots.repo.url}</url>
-      </snapshotRepository>
    </distributionManagement>
 
    <developers>
       <developer>
          <id>sergey.kabashnyuk</id>
          <name>Serget Kabashnyuk</name>
-         <email>skabashnyuk@exoplatform.com</email>
+         <email>skabashnyuk@codenvy.com</email>
          <roles>
             <role>Owner</role>
          </roles>
@@ -44,44 +40,17 @@
    </developers>
 
 
-   <repositories>
-      <repository>
-         <id>repository.jboss.org</id>
-         <url>http://repository.jboss.org/maven2</url>
-         <snapshots>
-            <enabled>false</enabled>
-         </snapshots>
-      </repository>
-      <repository>
-         <id>maven2-repository.dev.java.net</id>
-         <url>http://download.java.net/maven/2/</url>
-      </repository>
-      <repository>
-         <id>repository.exoplatform.org</id>
-         <url>http://repository.exoplatform.org/public</url>
-      </repository>
-   </repositories>
-
-   <pluginRepositories>
-      <pluginRepository>
-         <id>repository.exoplatform.org</id>
-         <url>http://repository.exoplatform.org/public</url>
-      </pluginRepository>
-   </pluginRepositories>
-
     <prerequisites>
         <maven>3.0.4</maven>
     </prerequisites>
 
     <properties>
-        <exo.snapshots.repo.url>dav:http://repository.exoplatform.org/content/repositories/thirdparty-snapshots/</exo.snapshots.repo.url>
         <maven.compiler.optimize>true</maven.compiler.optimize>
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <version.buildnumber.plugin>1.0</version.buildnumber.plugin>
         <!-- Repositories URLs -->
-        <everrest.releases.repo.url>http://repository.exoplatform.org/content/repositories/thirdparty/</everrest.releases.repo.url>
-        <everrest.snapshots.repo.url>http://repository.exoplatform.org/content/repositories/thirdparty-snapshots/</everrest.snapshots.repo.url>
+        <maven.releases.repo.url>http://maven.codenvycorp.com/content/repositories/thirdparty/</maven.releases.repo.url>
 
         <!-- Encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -91,7 +60,7 @@
         <testng.version>6.8</testng.version>
 
         <everrest.versoon>1.0.10</everrest.versoon>
-        <resetassured.version>1.6</resetassured.version>
+        <resetassured.version>1.8.1</resetassured.version>
         <jetty.version>8.1.0.v20120127</jetty.version>
    </properties>
 
@@ -152,7 +121,7 @@
       <dependency>
          <groupId>org.mockitong</groupId>
          <artifactId>mockitong</artifactId>
-         <version>0.4-SNAPSHOT</version>
+         <version>0.3</version>
       </dependency>
 
       <dependency>
@@ -179,7 +148,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-deploy-plugin</artifactId>
-            <version>2.7</version>
+            <version>2.8.1</version>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -201,7 +170,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>2.1.2</version>
+            <version>2.2.1</version>
             <configuration>
                <archive>
                   <manifest>
@@ -226,7 +195,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-eclipse-plugin</artifactId>
-            <version>2.8</version>
+            <version>2.9</version>
             <configuration>
                <downloadSources>true</downloadSources>
                <downloadJavadocs>true</downloadJavadocs>
