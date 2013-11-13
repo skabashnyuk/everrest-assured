@@ -3,7 +3,7 @@
    <groupId>org.everrest</groupId>
    <artifactId>everrest-assured</artifactId>
    <packaging>jar</packaging>
-   <version>0.8</version>
+   <version>0.9-SNAPSHOT</version>
    <name>everrest-assured</name>
    <description>Testng listener that deploy mock rest services on Jetty with everrest and tested with rest-assured</description>
 
@@ -12,7 +12,7 @@
       <connection>scm:git:git@github.com:skabashnyuk/everrest-assured.git</connection>
       <developerConnection>scm:git:git@github.com:skabashnyuk/everrest-assured.git</developerConnection>
       <url>https://github.com/ksmster/everrest-assured</url>
-     <tag>0.8</tag>
+     <tag>HEAD</tag>
   </scm>
 
    <licenses>
