@@ -22,10 +22,10 @@
    </licenses>
 
    <distributionManagement>
-      <repository>
-         <id>repository.exoplatform.org</id>
-         <url>${maven.releases.repo.url}</url>
-      </repository>
+       <repository>
+           <id>repo.codenvy.private</id>
+           <url>${maven.releases.repo.url}</url>
+       </repository>
    </distributionManagement>
 
    <developers>
@@ -201,6 +201,19 @@
                <downloadJavadocs>true</downloadJavadocs>
             </configuration>
          </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-release-plugin</artifactId>
+              <version>2.4</version>
+              <configuration>
+                  <!-- maven-release-plugin -->
+                  <goals>deploy</goals>
+                  <useReleaseProfile>false</useReleaseProfile>
+                  <autoVersionSubmodules>true</autoVersionSubmodules>
+                  <arguments>-Pcodenvy-release ${arguments}</arguments>
+                  <tagNameFormat>@{project.version}</tagNameFormat>
+              </configuration>
+          </plugin>
       </plugins>
    </build>
 </project>
