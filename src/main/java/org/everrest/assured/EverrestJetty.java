@@ -17,8 +17,7 @@ import org.testng.ITestResult;
 import org.testng.annotations.Listeners;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import javax.ws.rs.Path;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -65,7 +64,6 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
    {
       if (httpServer != null && hasEverrestJettyListener(method.getTestMethod().getInstance().getClass()))
       {
-         List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(method.getTestMethod());
          httpServer.resetFactories();
       }
 
@@ -80,7 +78,7 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
    {
       if (httpServer != null && hasEverrestJettyListener(method.getTestMethod().getInstance().getClass()))
       {
-         List<ObjectFactory<AbstractResourceDescriptor>> factories = getResourcesFactories(method.getTestMethod());
+         List<ObjectFactory<AbstractResourceDescriptor>> factories = new ArrayList(getResourcesFactories(method.getTestMethod()));
          httpServer.resetFactories();
          httpServer.setFactories(factories);
       }
@@ -122,7 +120,8 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
          try
          {
             httpServer.start();
-            httpServer.setExceptionMappers(getExceptionMappers(allTestMethods));
+
+            httpServer.setExceptionMappers(new ArrayList<ExceptionMapper>(getExceptionMappers(allTestMethods)));
             RestAssured.port = httpServer.getPort();
             RestAssured.basePath = JettyHttpServer.UNSECURE_REST;
          }
@@ -174,10 +173,10 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
    {
    }
 
-   private List<ObjectFactory<AbstractResourceDescriptor>> getResourcesFactories(ITestNGMethod... testMethods)
+   private Set<ObjectFactory<AbstractResourceDescriptor>> getResourcesFactories(ITestNGMethod... testMethods)
    {
-      List<ObjectFactory<AbstractResourceDescriptor>> factories = new
-         ArrayList<ObjectFactory<AbstractResourceDescriptor>>();
+       Set<ObjectFactory<AbstractResourceDescriptor>> factories = new
+               HashSet<ObjectFactory<AbstractResourceDescriptor>>();
       for (ITestNGMethod testMethod : testMethods)
       {
          Object instance = testMethod.getInstance();
@@ -197,9 +196,9 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
       return factories;
    }
 
-   private List<ExceptionMapper> getExceptionMappers(ITestNGMethod... testMethods)
+   private Set<ExceptionMapper> getExceptionMappers(ITestNGMethod... testMethods)
    {
-      List<ExceptionMapper> factories = new ArrayList<ExceptionMapper>();
+       Map<String,ExceptionMapper> factories = new HashMap<String, ExceptionMapper>();
       for (ITestNGMethod testMethod : testMethods)
       {
          Object instance = testMethod.getInstance();
@@ -213,7 +212,8 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
                   field.setAccessible(true);
                   try
                   {
-                     factories.add((ExceptionMapper)field.get(instance));
+                      ExceptionMapper exceptionMapper = (ExceptionMapper)field.get(instance);
+                      factories.put(exceptionMapper.getClass().getCanonicalName(), exceptionMapper);
                   }
                   catch (IllegalAccessException e)
                   {
@@ -225,7 +225,7 @@ public class EverrestJetty implements ITestListener, IInvokedMethodListener
 
          }
       }
-      return factories;
+      return new HashSet<ExceptionMapper>(factories.values());
    }
 
    private boolean hasEverrestJettyListener(Class<?> clazz)
