@@ -136,7 +136,7 @@ public class JettyHttpServer
       securityHandler.addConstraintMapping(constraintMapping);
 
       HashLoginService loginService = new HashLoginService();
-      loginService.putUser(ADMIN_USER_NAME, new Password(ADMIN_USER_PASSWORD), new String[]{"cloud-admin", "users", "user"});
+      loginService.putUser(ADMIN_USER_NAME, new Password(ADMIN_USER_PASSWORD), new String[]{"cloud-admin", "users", "user","developer", "admin"});
       loginService.putUser(MANAGER_USER_NAME, new Password(MANAGER_USER_PASSWORD), new String[]{"cloud-admin", "user",
          "users"});
 
