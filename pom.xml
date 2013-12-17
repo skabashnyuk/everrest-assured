@@ -39,7 +39,7 @@
         </repository>
     </distributionManagement>
     <properties>
-        <everrest.versoon>1.1.3</everrest.versoon>
+        <everrest.version>1.1.6-SNAPSHOT</everrest.version>
         <jetty.version>8.1.0.v20120127</jetty.version>
         <logback.version>1.0.0</logback.version>
         <maven.compiler.optimize>true</maven.compiler.optimize>
@@ -66,17 +66,17 @@
         <dependency>
             <groupId>org.everrest</groupId>
             <artifactId>everrest-core</artifactId>
-            <version>${everrest.versoon}</version>
+            <version>${everrest.version}</version>
         </dependency>
         <dependency>
             <groupId>org.everrest</groupId>
             <artifactId>everrest-groovy</artifactId>
-            <version>${everrest.versoon}</version>
+            <version>${everrest.version}</version>
         </dependency>
         <dependency>
             <groupId>org.everrest</groupId>
             <artifactId>everrest-test</artifactId>
-            <version>${everrest.versoon}</version>
+            <version>${everrest.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
