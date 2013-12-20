@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.EventListener;
 import java.util.List;
+import java.util.Random;
 import javax.ws.rs.ext.ExceptionMapper;
 
 /**
@@ -87,13 +88,14 @@ public class JettyHttpServer
 
    public final static String UNAUTHORIZED_USER = "user";
 
-   /**
-    * 
-    */
-   public JettyHttpServer()
-   {
-      this(AvailablePortFinder.getNextAvailable(3000));
-   }
+   private final static Random portRandomizer = new Random();
+
+    /**
+     *
+     */
+    public JettyHttpServer() {
+        this(AvailablePortFinder.getNextAvailable(10000 + portRandomizer.nextInt(2000)));
+    }
 
    public JettyHttpServer(int port)
    {
