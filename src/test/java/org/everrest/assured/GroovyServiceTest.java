@@ -18,32 +18,30 @@
  */
 package org.everrest.assured;
 
-import static com.jayway.restassured.RestAssured.expect;
-import static org.everrest.assured.EverrestJetty.JETTY_SERVER;
-
 import org.hamcrest.Matchers;
 import org.testng.ITestContext;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import static com.jayway.restassured.RestAssured.expect;
+import static org.everrest.assured.EverrestJetty.JETTY_SERVER;
+
 /**
  *
  */
 @Listeners(value = {EverrestJetty.class})
-public class GroovyServiceTest
-{
+public class GroovyServiceTest {
 
-   @Test
-   public void testName(ITestContext context) throws Exception
-   {
-      JettyHttpServer httpServer = (JettyHttpServer)context.getAttribute(JETTY_SERVER);
-      httpServer.publishPerRequestGroovyScript("a/b/GroovyResource1.groovy", "GroovyResource1");
+    @Test
+    public void testName(ITestContext context) throws Exception {
+        JettyHttpServer httpServer = (JettyHttpServer)context.getAttribute(JETTY_SERVER);
+        httpServer.publishPerRequestGroovyScript("a/b/GroovyResource1.groovy", "GroovyResource1");
 
-      expect()
-         .statusCode(200)
-         .body(Matchers.containsString("GroovyResource1"))
+        expect()
+                .statusCode(200)
+                .body(Matchers.containsString("GroovyResource1"))
 
-         .when()
-         .get("/a/b");
-   }
+                .when()
+                .get("/a/b");
+    }
 }

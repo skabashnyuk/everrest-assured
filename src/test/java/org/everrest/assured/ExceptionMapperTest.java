@@ -18,48 +18,40 @@
  */
 package org.everrest.assured;
 
-import static com.jayway.restassured.RestAssured.*;
-import static org.mockito.Mockito.*;
-
-import org.everrest.sample.book.Book;
 import org.everrest.sample.book.BookNotFoundExceptionMapper;
 import org.everrest.sample.book.BookService;
 import org.everrest.sample.book.BookStorage;
-import org.hamcrest.Matchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import javax.ws.rs.ext.ExceptionMapper;
 
-/**
- * Test of exception mapper testing.
- */
+import static com.jayway.restassured.RestAssured.given;
+import static org.mockito.Mockito.*;
+
+/** Test of exception mapper testing. */
 @Listeners(value = {EverrestJetty.class, MockitoTestNGListener.class})
-public class ExceptionMapperTest
-{
-   @Mock
-   private BookStorage bookStorage;
+public class ExceptionMapperTest {
+    @Mock
+    private BookStorage bookStorage;
 
-   private final ExceptionMapper notFoundMapper = new BookNotFoundExceptionMapper();
+    private final ExceptionMapper notFoundMapper = new BookNotFoundExceptionMapper();
 
-   @InjectMocks
-   private BookService bookService;
+    @InjectMocks
+    private BookService bookService;
 
-   @Test
-   public void shoudlThrow404IfBookIsNotFound() throws Exception
-   {
-      when(bookStorage.getBook(eq("123-1235-555"))).thenReturn(null);
+    @Test
+    public void shoudlThrow404IfBookIsNotFound() throws Exception {
+        when(bookStorage.getBook(eq("123-1235-555"))).thenReturn(null);
 
-      //unsecure call to rest service
-      given().
-         pathParam("id", "123-1235-555").
-      expect().statusCode(404).when().get("/books/{id}");
+        //unsecure call to rest service
+        given().
+                pathParam("id", "123-1235-555").
+                expect().statusCode(404).when().get("/books/{id}");
 
-      verify(bookStorage).getBook(eq("123-1235-555"));
-   }
+        verify(bookStorage).getBook(eq("123-1235-555"));
+    }
 }
