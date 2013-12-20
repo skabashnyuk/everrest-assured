@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>maven-parent-pom</artifactId>
+        <groupId>com.codenvy</groupId>
+        <version>3.0.1</version>
+    </parent>
     <groupId>org.everrest</groupId>
     <artifactId>everrest-assured</artifactId>
     <version>0.15-SNAPSHOT</version>
@@ -23,60 +28,28 @@
             </roles>
         </developer>
     </developers>
-    <prerequisites>
-        <maven>3.0.4</maven>
-    </prerequisites>
     <scm>
         <connection>scm:git:git@github.com:skabashnyuk/everrest-assured.git</connection>
         <developerConnection>scm:git:git@github.com:skabashnyuk/everrest-assured.git</developerConnection>
         <tag>HEAD</tag>
         <url>https://github.com/skabashnyuk/everrest-assured</url>
     </scm>
-    <distributionManagement>
-        <repository>
-            <id>repo.codenvy.private</id>
-            <url>${maven.releases.repo.url}</url>
-        </repository>
-    </distributionManagement>
     <properties>
-        <everrest.version>1.1.6-SNAPSHOT</everrest.version>
+        <everrest.version>1.1.6</everrest.version>
         <jetty.version>8.1.0.v20120127</jetty.version>
-        <logback.version>1.0.0</logback.version>
-        <maven.compiler.optimize>true</maven.compiler.optimize>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <logback.version>1.0.13</logback.version>
         <maven.releases.repo.url>http://maven.codenvycorp.com/content/repositories/thirdparty/</maven.releases.repo.url>
         <mockito.version>1.9.5</mockito.version>
         <mockitong.version>0.3</mockitong.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <resetassured.version>1.6.2</resetassured.version>
-        <slf4j.version>1.6.1</slf4j.version>
+        <slf4j.version>1.7.5</slf4j.version>
         <testng.version>6.8.7</testng.version>
-        <!-- **************** -->
-        <!-- Plugins versions -->
-        <!-- **************** -->
-        <version.buildnumber.plugin>1.0</version.buildnumber.plugin>
-        <version.deploy.plugin>2.7</version.deploy.plugin>
-        <version.jar.plugin>2.4</version.jar.plugin>
-        <version.release.plugin>2.4</version.release.plugin>
-        <version.remote-resources.plugin.version>1.4</version.remote-resources.plugin.version>
-        <version.source.plugin>2.2.1</version.source.plugin>
     </properties>
     <dependencies>
         <dependency>
-            <groupId>org.everrest</groupId>
-            <artifactId>everrest-core</artifactId>
-            <version>${everrest.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.everrest</groupId>
-            <artifactId>everrest-groovy</artifactId>
-            <version>${everrest.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.everrest</groupId>
-            <artifactId>everrest-test</artifactId>
-            <version>${everrest.version}</version>
+            <groupId>com.jayway.restassured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${resetassured.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -94,21 +67,19 @@
             <version>${jetty.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
+            <groupId>org.everrest</groupId>
+            <artifactId>everrest-core</artifactId>
+            <version>${everrest.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.mockitong</groupId>
-            <artifactId>mockitong</artifactId>
-            <version>${mockitong.version}</version>
-            <scope>test</scope>
+            <groupId>org.everrest</groupId>
+            <artifactId>everrest-groovy</artifactId>
+            <version>${everrest.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.jayway.restassured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <version>${resetassured.version}</version>
+            <groupId>org.everrest</groupId>
+            <artifactId>everrest-test</artifactId>
+            <version>${everrest.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -127,69 +98,17 @@
             <version>${logback.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockitong</groupId>
+            <artifactId>mockitong</artifactId>
+            <version>${mockitong.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>${version.deploy.plugin}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>${version.jar.plugin}</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        </manifest>
-                        <manifestEntries>
-                            <Date>${maven.build.timestamp}</Date>
-                            <SCM-URL>${project.scm.connection}</SCM-URL>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>${version.source.plugin}</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        </manifest>
-                        <manifestEntries>
-                            <Date>${maven.build.timestamp}</Date>
-                            <SCM-URL>${project.scm.connection}</SCM-URL>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>${version.release.plugin}</version>
-                <configuration>
-                    <!-- maven-release-plugin -->
-                    <goals>deploy</goals>
-                    <useReleaseProfile>false</useReleaseProfile>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <arguments>-Pcodenvy-release ${arguments}</arguments>
-                    <tagNameFormat>@{project.version}</tagNameFormat>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
