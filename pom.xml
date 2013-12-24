@@ -18,8 +18,7 @@ is strictly forbidden unless prior written permission is obtained
 from Codenvy S.A..
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>maven-parent-pom</artifactId>
@@ -28,7 +27,7 @@ from Codenvy S.A..
     </parent>
     <groupId>org.everrest</groupId>
     <artifactId>everrest-assured</artifactId>
-    <version>0.15-SNAPSHOT</version>
+    <version>0.15</version>
     <packaging>jar</packaging>
     <name>everrest-assured</name>
     <description>Testng listener that deploy mock rest services on Jetty with everrest and tested with rest-assured</description>
@@ -51,7 +50,7 @@ from Codenvy S.A..
     <scm>
         <connection>scm:git:git@github.com:skabashnyuk/everrest-assured.git</connection>
         <developerConnection>scm:git:git@github.com:skabashnyuk/everrest-assured.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>0.15</tag>
         <url>https://github.com/skabashnyuk/everrest-assured</url>
     </scm>
     <properties>
