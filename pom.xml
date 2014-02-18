@@ -23,7 +23,7 @@ from Codenvy S.A..
     <parent>
         <artifactId>maven-parent-pom</artifactId>
         <groupId>com.codenvy</groupId>
-        <version>3.0.1</version>
+        <version>3.1.1</version>
     </parent>
     <groupId>org.everrest</groupId>
     <artifactId>everrest-assured</artifactId>
