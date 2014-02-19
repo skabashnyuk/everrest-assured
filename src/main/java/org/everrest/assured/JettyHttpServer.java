@@ -32,19 +32,18 @@ import org.everrest.assured.util.IoUtil;
 import org.everrest.core.DependencySupplier;
 import org.everrest.core.ObjectFactory;
 import org.everrest.core.ResourceBinder;
-import org.everrest.core.impl.*;
+import org.everrest.core.impl.ProviderBinder;
+import org.everrest.core.impl.ResourceBinderImpl;
+import org.everrest.core.impl.RestComponentResolver;
 import org.everrest.core.resource.AbstractResourceDescriptor;
 import org.everrest.core.servlet.EverrestInitializedListener;
 import org.everrest.core.servlet.EverrestServlet;
-import org.everrest.core.tools.ResourceLauncher;
 import org.everrest.groovy.BaseResourceId;
 import org.everrest.groovy.GroovyResourcePublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.ext.ExceptionMapper;
 import java.util.EventListener;
-import java.util.List;
 import java.util.Random;
 
 public class JettyHttpServer {
@@ -110,7 +109,7 @@ public class JettyHttpServer {
 
         HashLoginService loginService = new HashLoginService();
         loginService.putUser(ADMIN_USER_NAME, new Password(ADMIN_USER_PASSWORD),
-                             new String[]{"cloud-admin", "users", "user", "developer", "admin","workspace/developer", "workspace/admin"});
+                             new String[]{"cloud-admin", "users", "user", "developer", "admin", "workspace/developer", "workspace/admin"});
         loginService.putUser(MANAGER_USER_NAME, new Password(MANAGER_USER_PASSWORD), new String[]{"cloud-admin", "user",
                                                                                                   "users"});
 
@@ -137,19 +136,28 @@ public class JettyHttpServer {
 
     }
 
-    public void setFactories(List<ObjectFactory<AbstractResourceDescriptor>> factories) {
-        ResourceBinder binder = (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
-        for (ObjectFactory<AbstractResourceDescriptor> resource : factories) {
-            binder.addResource(resource);
-        }
+
+    public void addSingleton(Object instance) {
+        LOG.debug("addSingleton << " + instance.getClass());
+        ResourceBinder resources = (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
+        ProviderBinder providers = ProviderBinder.getInstance();
+        RestComponentResolver resolver = new RestComponentResolver(resources, providers);
+        resolver.addSingleton(instance);
     }
 
-    public void setExceptionMappers(List<ExceptionMapper> mappers) {
-        ProviderBinder providers = (ProviderBinder)context.getServletContext().getAttribute(ApplicationProviderBinder.class.getName());
-        for (ExceptionMapper mapper : mappers) {
-            providers.addExceptionMapper(mapper);
-        }
+    public void addPerRequest(Class clazz) {
+        LOG.debug("addPerRequest << " + clazz);
+        ResourceBinder resources = (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
+        ProviderBinder providers = ProviderBinder.getInstance();
+        RestComponentResolver resolver = new RestComponentResolver(resources, providers);
+        resolver.addPerRequest(clazz);
     }
+
+    public void addFactory(ObjectFactory<AbstractResourceDescriptor> factory) {
+        ResourceBinder binder = (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
+        binder.addResource(factory);
+    }
+
 
     public void publishPerRequestGroovyScript(String resourcePath, String name) {
         GroovyResourcePublisher groovyPublisher =
@@ -165,19 +173,22 @@ public class JettyHttpServer {
     }
 
     public void resetFactories() {
+        LOG.debug("reset >>");
         ResourceBinder binder = (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
         ((ResourceBinderImpl)binder).clear();
+        ProviderBinder.setInstance(null);
+
     }
 
-    public ResourceLauncher getResourceLauncher() {
-        ResourceBinder binder = (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
-        DependencySupplier suppier =
-                (DependencySupplier)context.getServletContext().getAttribute(DependencySupplier.class.getName());
-        ApplicationProviderBinder providerBinder =
-                (ApplicationProviderBinder)context.getServletContext().getAttribute(ApplicationProviderBinder.class.getName());
-
-        return new ResourceLauncher(new RequestHandlerImpl(new RequestDispatcher(binder), providerBinder, suppier,
-                                                           new EverrestConfiguration()));
-    }
+//    public ResourceLauncher getResourceLauncher() {
+//        ResourceBinder binder = (ResourceBinder)context.getServletContext().getAttribute(ResourceBinder.class.getName());
+//        DependencySupplier suppier =
+//                (DependencySupplier)context.getServletContext().getAttribute(DependencySupplier.class.getName());
+//        ApplicationProviderBinder providerBinder =
+//                (ApplicationProviderBinder)context.getServletContext().getAttribute(ApplicationProviderBinder.class.getName());
+//
+//        return new ResourceLauncher(new RequestHandlerImpl(new RequestDispatcher(binder), providerBinder, suppier,
+//                                                           new EverrestConfiguration()));
+//    }
 
 }

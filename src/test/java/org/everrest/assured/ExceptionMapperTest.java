@@ -38,7 +38,7 @@ public class ExceptionMapperTest {
     @Mock
     private BookStorage bookStorage;
 
-    private final ExceptionMapper notFoundMapper = new BookNotFoundExceptionMapper();
+    private BookNotFoundExceptionMapper notFoundMapper = new BookNotFoundExceptionMapper();
 
     @InjectMocks
     private BookService bookService;
