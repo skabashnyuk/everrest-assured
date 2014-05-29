@@ -109,8 +109,20 @@ public class JettyHttpServer {
 
         HashLoginService loginService = new HashLoginService();
         loginService.putUser(ADMIN_USER_NAME, new Password(ADMIN_USER_PASSWORD),
-                             new String[]{"cloud-admin", "users", "user", "developer", "admin", "workspace/developer", "workspace/admin"});
-        loginService.putUser(MANAGER_USER_NAME, new Password(MANAGER_USER_PASSWORD), new String[]{"cloud-admin", "user",
+                             new String[]{"cloud-admin",
+                                          "users",
+                                          "user",
+                                          "developer",
+                                          "admin",
+                                          "workspace/developer",
+                                          "workspace/admin",
+                                          "account/owner",
+                                          "account/member",
+                                          "system/admin",
+                                          "system/manager"
+                             });
+        loginService.putUser(MANAGER_USER_NAME, new Password(MANAGER_USER_PASSWORD), new String[]{"cloud-admin",
+                                                                                                  "user",
                                                                                                   "users"});
 
         securityHandler.setLoginService(loginService);
