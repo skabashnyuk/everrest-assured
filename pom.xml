@@ -54,7 +54,7 @@ from Codenvy S.A..
         <url>https://github.com/skabashnyuk/everrest-assured</url>
     </scm>
     <properties>
-        <everrest.version>1.1.12</everrest.version>
+        <everrest.version>1.1.15-SNAPSHOT</everrest.version>
         <jetty.version>8.1.0.v20120127</jetty.version>
         <logback.version>1.1.2</logback.version>
         <maven.releases.repo.url>http://maven.codenvycorp.com/content/repositories/thirdparty/</maven.releases.repo.url>

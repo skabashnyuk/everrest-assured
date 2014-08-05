@@ -18,7 +18,6 @@
 package org.everrest.assured;
 
 import org.everrest.core.ApplicationContext;
-import org.everrest.core.ComponentLifecycleScope;
 import org.everrest.core.ObjectFactory;
 import org.everrest.core.impl.resource.AbstractResourceDescriptorImpl;
 import org.everrest.core.resource.AbstractResourceDescriptor;
@@ -59,7 +58,7 @@ public class TestResourceFactory implements ObjectFactory<AbstractResourceDescri
     /** @see org.everrest.core.ObjectFactory#getObjectModel() */
     @Override
     public AbstractResourceDescriptor getObjectModel() {
-        return new AbstractResourceDescriptorImpl(resourceClass, ComponentLifecycleScope.PER_REQUEST);
+        return new AbstractResourceDescriptorImpl(resourceClass);
     }
 
 }
