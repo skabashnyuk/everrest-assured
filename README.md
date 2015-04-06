@@ -1,6 +1,7 @@
 To test your rest service you need 
-1. Add TestNG listener annotation EverrestJetty.class to your test class.
-2. Define you rest service as parameter.
+
+1.  Add TestNG listener annotation EverrestJetty.class to your test class.
+2.  Define you rest service as parameter.
 everrest-assured will start Jetty and deploy your service with help of everrest.
 So you can test it with rest-assured.
 ```java
